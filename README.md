@@ -1,9 +1,5 @@
 # Applied Reinforcement Learning (A2C) on Transportation Stocks — with a 2026 data update
 
-Course project for **Artificial Intelligence in Finance** (SS 2022, instructor *Ralf Kellner*),
-written by **Christopher Voizard** (MatrNr 106225), plus an independent 2026 re-run of its
-reinforcement-learning part on fresh market data.
-
 The project trains **A2C** agents (Stable-Baselines3) on daily price series of **Boeing (BA)**,
 **Airbus (AIR.PA)** and **Toyota (TM)**, compares them against a **buy-and-hold** baseline, and
 tests whether the agent's actions carry any predictive value.
