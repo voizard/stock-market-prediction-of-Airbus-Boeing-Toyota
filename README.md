@@ -47,7 +47,7 @@ on exactly that window. Full numbers: `results/results_ba_newdata.json`.
 | Boeing / Toyota prices | stockanalysis.com history API | `data/download_data.py` |
 | Airbus prices | stockanalysis.com (EPA:AIR) + ariva.de | not fully scriptable; see `src/data_update/` |
 | P/E, P/S | stockanalysis.com | trailing values |
-| RL helper package (`aif_course`) | third-party helper, not redistributed | **404 — no longer available** |
+| RL helper modules (`aif_course`) | third-party helper, available locally, **not** part of this repository | upstream repository: **404** |
 
 The price CSV is **not** redistributed here — it belongs to the data provider. Fetch it with
 `data/download_data.py`; see `data/README.md`.
@@ -66,11 +66,13 @@ The price CSV is **not** redistributed here — it belongs to the data provider.
 1. **Different environment, different feature count.** The re-run uses `pandas_ta_classic`,
    which provides **348 indicators instead of 204** — the observation vector grows from
    **205 to 334**. Part of any performance difference can come from that, not from the data update.
-2. **The helper package is not available.** `aif_environment.py` / `aif_analysis.py` (third-party code,
-   not redistributed here) are required to run the RL part; the upstream repository returns 404.
-   The re-run therefore uses a locally reconstructed environment runner (`src/env_runner.py`)
-   with documented substitutions (local CSVs instead of yfinance, serial instead of
-   multiprocessing).
+2. **The RL part is not self-contained.** `aif_environment.py` / `aif_analysis.py` are
+   third-party helper modules. They were available locally when the re-run was produced, so
+   the numbers are genuine — but they are **not included in this repository** (the upstream
+   repository that hosted them returns 404), so a fresh clone has to supply them under
+   `src/course/`. The re-run uses a locally reconstructed environment runner
+   (`src/env_runner.py`) with documented substitutions (local CSVs instead of yfinance,
+   serial instead of multiprocessing).
 3. **Library drift.** Original: SB3 1.6.0 + gym 0.21 + torch 1.12.1 + Python 3.8.
    Re-run: SB3 2.9 + gymnasium 1.4 + torch 2.x + Python 3.13.
 4. **Only one pre-trained agent was available** (`A2C_showcase_agent.zip`), while the notebook

@@ -9,22 +9,23 @@
 | `make_pdf.py` | renders a Markdown memo to PDF (WeasyPrint) |
 | `data_update/` | the throwaway scripts that fetched the 2026 market data (Boeing/Toyota history, Airbus from ariva.de, P/E + P/S) |
 
-## Missing dependency: the helper package
+## The two helper modules are not part of this repository
 
-`train_eval.py` imports the helper modules:
+`train_eval.py` imports two third-party modules:
 
 ```python
 sys.path.insert(0, ".../src/course")
 from aif_analysis import ai_trade_performance, analyze_actions_taken
 ```
 
-`aif_environment.py` and `aif_analysis.py` are third-party code and are
-**not redistributed** in this repository — the upstream repository returns **404**. To re-run the RL part, place those two files in
-`src/course/` (and adjust the paths at the top of `train_eval.py` / `env_runner.py`).
+`aif_environment.py` and `aif_analysis.py` were available locally when the re-run was
+produced, so the results in `results/results_ba_newdata.json` are genuine. They are **not
+redistributed here**, and the upstream repository that hosted them returns **404**. To re-run
+the RL part, place those two files in `src/course/` and adjust the paths at the top of
+`train_eval.py` / `env_runner.py` (they point at the machine that produced the run).
 
-Consequence: the RL part of this repository is **not reproducible from scratch**. The
-results in `results/results_ba_newdata.json` and `paper/UPDATE_2026_REPORT.md` were produced
-with those modules present locally, and the deviations are documented in the report.
+Consequence: a fresh clone of this repository **cannot reproduce the RL part without those
+two files**. The deviations of the re-run are documented in the report.
 
 ## Run order
 
