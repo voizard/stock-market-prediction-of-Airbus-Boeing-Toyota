@@ -114,12 +114,11 @@ cd paper/latex && mkdir -p out && tectonic main.tex --outdir out
 
 ## Provenance
 
-The notebook in `notebooks/` is the author's own submission for the course
-*Artificial Intelligence in Finance* (SS 2022, Ralf Kellner). It was cleaned up
-(spelling, execution counters, relative paths) without changing results; the underlying
-course template and helper package belong to the instructor and are **not** redistributed
-here. The 2026 update (`paper/UPDATE_2026_REPORT.md`, `src/`) is independent work by the
-same author.
+The notebook in `notebooks/` is the author's own work. It was cleaned up (spelling,
+execution counters, relative paths) without changing results. The 2026 update
+(`paper/UPDATE_2026_REPORT.md`, `src/`) is independent work by the same author. The template
+and helper package the notebook builds on belong to a third party and are **not**
+redistributed here.
 
 ## License
 
