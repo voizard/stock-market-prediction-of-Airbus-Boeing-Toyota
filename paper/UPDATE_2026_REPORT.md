@@ -1,6 +1,6 @@
-# AIF-Projekt — Update-Report (Stand 07.10.2026)
+# A2C auf Transportaktien — Update-Report (Stand 07.10.2026)
 
-**Projekt:** Project Assignment, Kurs *Artificial Intelligence in Finance* (SS 2022, Dozent R. Kellner)
+**Projekt:** Applied Reinforcement Learning (A2C) on Transportation Stocks — 2026 data update
 **Autor:** Christopher Voizard, MatrNr 106225
 **Zweck:** Fortschreibung des abgegebenen Notebooks mit Daten bis 06.10.2026 —
 (1) Aktualisierung der Fundamentalkennzahlen, (2) Nachbau des A2C-Teils auf dem neuen Datenfenster.

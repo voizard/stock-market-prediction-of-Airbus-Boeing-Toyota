@@ -47,7 +47,7 @@ on exactly that window. Full numbers: `results/results_ba_newdata.json`.
 | Boeing / Toyota prices | stockanalysis.com history API | `data/download_data.py` |
 | Airbus prices | stockanalysis.com (EPA:AIR) + ariva.de | not fully scriptable; see `src/data_update/` |
 | P/E, P/S | stockanalysis.com | trailing values |
-| Course package (`aif_course`) | `github.com/RalfKellner/aif_course` | **404 — no longer available** |
+| RL helper package (`aif_course`) | third-party helper, not redistributed | **404 — no longer available** |
 
 The price CSV is **not** redistributed here — it belongs to the data provider. Fetch it with
 `data/download_data.py`; see `data/README.md`.
@@ -57,7 +57,7 @@ The price CSV is **not** redistributed here — it belongs to the data provider.
 - **Fundamentals**: P/E and P/S as trailing values; "12-month return" as the sum of daily
   log returns of the adjusted close.
 - **RL**: `A2C("MlpPolicy")`, 75,000 timesteps per agent, five seeds (100–104); evaluation with
-  the course's `ai_trade_performance(num_plays=20)`. The test environment re-uses the training
+  the helper package's `ai_trade_performance(num_plays=20)`. The test environment re-uses the training
   environment's feature list and scaler, as in the notebook.
 - **Fair comparison**: agent and buy-and-hold run on the *same* 20 episode seeds.
 
@@ -66,8 +66,8 @@ The price CSV is **not** redistributed here — it belongs to the data provider.
 1. **Different environment, different feature count.** The re-run uses `pandas_ta_classic`,
    which provides **348 indicators instead of 204** — the observation vector grows from
    **205 to 334**. Part of any performance difference can come from that, not from the data update.
-2. **The course package is gone.** `aif_environment.py` / `aif_analysis.py` (instructor's code,
-   not redistributed here) are required to run the RL part; their repository returns 404.
+2. **The helper package is not available.** `aif_environment.py` / `aif_analysis.py` (third-party code,
+   not redistributed here) are required to run the RL part; the upstream repository returns 404.
    The re-run therefore uses a locally reconstructed environment runner (`src/env_runner.py`)
    with documented substitutions (local CSVs instead of yfinance, serial instead of
    multiprocessing).
@@ -109,8 +109,8 @@ python3 src/make_pdf.py paper/UPDATE_2026_REPORT.md paper/AIF_Update_2026.pdf
 cd paper/latex && mkdir -p out && tectonic main.tex --outdir out
 ```
 
-`src/train_eval.py` needs the course modules `aif_environment.py` and `aif_analysis.py` in
-`src/course/` (see limitation 2 — they are course material and not part of this repository).
+`src/train_eval.py` needs the helper modules `aif_environment.py` and `aif_analysis.py` in
+`src/course/` (see limitation 2 — they are third-party code and not part of this repository).
 
 ## Provenance
 
