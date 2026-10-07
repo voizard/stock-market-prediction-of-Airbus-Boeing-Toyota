@@ -1,0 +1,174 @@
+\section{2026 Update: Fundamentals and a Re-run of the A2C Part}
+
+This chapter extends the original project with data up to 6 October 2026. It has two parts:
+an update of the fundamental figures (Section~\ref{sec:update-fundamentals}) and an
+independent re-run of the reinforcement-learning part on the new data window
+(Section~\ref{sec:update-a2c}). The re-run had to be carried out in a different software
+environment than the original notebook; every deviation is documented in
+Section~\ref{sec:update-deviations} and should be read before comparing any number.
+
+\subsection{Updated Fundamental Figures}
+\label{sec:update-fundamentals}
+
+Methodology as in Chapter~1: P/E and P/S are trailing values, and the log-return is the sum
+of the daily log-returns of the adjusted close over twelve months.
+
+\begin{table}[H]
+  \centering
+  \caption{Fundamental figures: original notebook (2022) versus 6 October 2026.}
+  \label{tab:update-fundamentals}
+  \begin{tabular}{lrrr}
+    \toprule
+    Figure & Boeing (BA) & Airbus (AIR.PA) & Toyota (TM)\\
+    \midrule
+    P/E 2022        & n/a (KeyError) & 19.887 & 10.375\\
+    P/E 2026        & 70.79          & 25.04  & 7.91\\
+    P/S 2022        & 1.502          & 1.458  & 0.0063\\
+    P/S 2026        & 1.60           & 1.93   & 0.68\\
+    Log-return 2022 & $-0.3025$      & $-0.1451$ & $-0.1486$\\
+    Log-return 2026 & $-0.1558$      & $-0.0945$ & $-0.0743$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{P/E ratio.} The statement from Section~1.2 is confirmed and partly sharpened.
+Airbus remains above the guideline value of 15 (19.9 $\rightarrow$ 25.0), Toyota clearly
+below it (10.4 $\rightarrow$ 7.9). Boeing delivers a value for the first time: \textbf{70.79},
+which is an extremely high valuation multiple -- a statement about valuation, not about the
+share price.
+
+\paragraph{P/S ratio.} The update uncovered a data error in the original notebook. The value
+of $0.0063$ reported for Toyota (interpreted there as ``close to zero'', i.e.\ very cheap) was
+a \texttt{yfinance} outlier. The actual value is \textbf{0.68}: Toyota is still the cheapest of
+the three, but the original statement ``close to zero'' is wrong. Boeing stands at 1.60 and
+Airbus at 1.93.
+
+\paragraph{Log-returns.} The core statement holds: all three shares are negative over the last
+twelve months as well (BA $-15.6\,\%$, AIR $-9.5\,\%$, TM $-7.4\,\%$), so buy-and-hold would
+have lost money again. Over the longer horizon since the original data ended (August 2022),
+however, all three are clearly positive (BA $+20.5\,\%$, TM $+39.5\,\%$, AIR $+50$ to
+$+65\,\%$ over five years). The loss picture was therefore \emph{window-specific}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.80\textwidth]{update_2026_1y.png}
+  \caption{Price development of the three shares over the last twelve months
+  (normalised, 100 = one year ago).}
+\end{figure}
+
+\subsection{Re-run of the A2C Part on New Data}
+\label{sec:update-a2c}
+
+The protocol of the original notebook is reproduced: five agents with
+\texttt{A2C("MlpPolicy")}, 75{,}000 timesteps each, evaluated with
+\texttt{ai\_trade\_performance(num\_plays=20)}. The test environment re-uses the feature list
+and the scaler of the training environment. Agent and buy-and-hold are evaluated on the same
+twenty episode seeds, so the comparison is fair.
+
+\begin{table}[H]
+  \centering
+  \caption{2026 re-run on Boeing: final NAV per episode (start $=1.0$), mean over
+  twenty episodes per agent.}
+  \label{tab:update-a2c}
+  \begin{tabular}{crrr|rrr}
+    \toprule
+    \# & Seed & Train agent & Train B\&H & Test agent & Test B\&H & Test agent better\\
+    \midrule
+    1 & 100 & 1.6705 & 0.9647 & \textbf{0.5616} & 0.9475 & 0\,\%\\
+    2 & 101 & 2.4073 & 0.9671 & 1.2403 & 0.9408 & 100\,\%\\
+    3 & 102 & 4.0534 & 0.9956 & 0.9828 & 0.9412 & 75\,\%\\
+    4 & 103 & 7.0580 & 0.9711 & 1.0106 & 0.9493 & 70\,\%\\
+    5 & 104 & 5.1547 & 0.9727 & 1.1326 & 0.9485 & 80\,\%\\
+    \midrule
+    $\varnothing$ & & 4.0688 & 0.9742 & 0.9856 & 0.9455 & 65\,\%\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Training window 6 October 2021 to 31 May 2024 (in-sample), test window 1 June 2024 to
+6 October 2026 (out-of-sample).
+
+\paragraph{In-sample results are not evidence of skill.} On the training window the agents
+reach an average NAV of 4.07 against 0.97 for buy-and-hold, and they beat the benchmark in
+every episode. This is not a result -- the agents were trained on exactly this window, so the
+figure only shows that they memorised it.
+
+\paragraph{Out-of-sample the picture is sober.} On the test window the average NAV is 0.9856
+against 0.9455 for buy-and-hold, with the agent ahead in \textbf{65\,\%} of the episodes --
+but with a very wide spread: agent 1 loses heavily (0.56), agent 2 wins clearly (1.24), and
+two of five agents lose against buy-and-hold in at least a quarter of the episodes. The
+advantage lies within seed variance and is \textbf{not significant}.
+
+\paragraph{Buy-and-hold is below 1.0 in both windows}, i.e.\ Boeing lost value over both
+periods. The question here is therefore ``lose less'', not ``win''. Overall the re-run
+\textbf{supports} the conclusion of the original notebook: A2C does not deliver a reliable
+outperformance.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{update_2026_a2c.png}
+  \caption{Final NAV per episode (mean of the five agents), left: training window
+  (in-sample), right: test window (out-of-sample).}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \caption{Action distribution of the agents (one episode each).}
+  \label{tab:update-actions}
+  \begin{tabular}{crrr|rrr}
+    \toprule
+    \# & Train short & Train cash & Train long & Test short & Test cash & Test long\\
+    \midrule
+    1 & 268 & 18  & 348 & 239 & 17  & 299\\
+    2 & 295 & 39  & 300 & 304 & 24  & 227\\
+    3 & 297 & 24  & 313 & 279 & 29  & 247\\
+    4 & 246 & 212 & 176 & 260 & 201 & 94\\
+    5 & 296 & 15  & 323 & 309 & 12  & 234\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+All agents trade predominantly long; only agent~4 holds a large cash position. Short
+positions are almost always held, but rarely with a large weight.
+
+\subsection{Deviations from the Original Notebook}
+\label{sec:update-deviations}
+
+The re-run did not execute in the original conda environment (Python 3.8.8,
+stable-baselines3 1.6.0, gym 0.21, torch 1.12.1) but in a Linux container with a current
+stack. All substitutions are deliberate and documented.
+
+\begin{table}[H]
+  \centering
+  \caption{Substitutions in the 2026 re-run.}
+  \label{tab:update-deviations}
+  \begin{tabular}{lll}
+    \toprule
+    Aspect & Original notebook & 2026 re-run\\
+    \midrule
+    Price data       & \texttt{yfinance} (live)   & local CSV\\
+    Technical indicators & \texttt{pandas\_ta} 0.3.14b0 & \texttt{pandas\_ta\_classic}\\
+    Indicator count  & 204                        & 348\\
+    Observation size & 205                        & \textbf{334}\\
+    Parallelisation  & multiprocessing pool       & serial\\
+    RL stack         & SB3 1.6.0 + gym 0.21       & SB3 2.9 + gymnasium 1.4\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{The most important limitation is the observation size of 334 instead of 205.} The
+agent sees more input features than in the original, so part of any performance difference
+may stem from that and not from the data update. In addition, \texttt{yfinance} is blocked
+from this host (HTTP~429 on every endpoint), which is why the price series is read from a
+local file, and the course package \texttt{aif\_course} of the instructor is no longer
+available (the upstream repository returns HTTP~404). The environment had to be
+reconstructed locally; the exact substitutions are documented in the accompanying code.
+
+\subsection{Conclusion of the Update}
+
+The fundamental figures confirm the original assessment of Airbus (expensive) and Toyota
+(cheap), correct the erroneous Toyota P/S value, and add a very high P/E for Boeing. The
+loss picture of the log-returns is confirmed for the last twelve months, but turns out to be
+window-specific over a longer horizon. The A2C re-run on new data reproduces the original
+conclusion: on average the agent is slightly ahead of buy-and-hold out-of-sample, but the
+spread across seeds is so large that no reliable outperformance can be claimed.
