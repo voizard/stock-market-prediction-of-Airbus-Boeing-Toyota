@@ -1,0 +1,121 @@
+\section{A2C Algorithm Applied and Analysis}
+
+For each of the three shares, an Advantage Actor-Critic (A2C) agent was trained and
+evaluated against a simple buy-and-hold strategy. Per share, five independently trained
+agents were compared with the market. The tables below report the average returns of the
+trained agents, the average returns of the market (buy and hold), and the average
+percentage of cases in which the agent performed better than the market.
+
+\subsection{Boeing}
+
+\begin{table}[H]
+  \centering
+  \caption{Boeing -- average returns of agent vs.\ market.}
+  \label{tab:boeing}
+  \begin{tabular}{lrrrrr}
+    \toprule
+     & Agent 1 & Agent 2 & Agent 3 & Agent 4 & Agent 5\\
+    \midrule
+    Trained agent   & 1.151250 & 0.982355 & 1.268870 & 1.211902 & 1.220214\\
+    Market (B\&H)   & 1.220214 & 1.194680 & 1.411054 & 1.325877 & 1.139906\\
+    Agent better (\%) & 0.55 & 0.10 & 0.40 & 0.80 & 0.40\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z043_1.png}
+  \caption{Boeing -- cumulative return ratio: buy and hold vs.\ trained agent.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z044_1.png}
+  \caption{Boeing -- actions chosen by the trained agents over time.}
+\end{figure}
+
+\paragraph{Commentary on the result for Boeing.}
+Given those numbers, it can be stated that the A2C algorithm applied to the Boeing share
+would not result in an overall better performance than the simple buy-and-hold strategy.
+Only in 45\% of the cases (on average) would the trained agent show a better performance.
+This is mainly due to one entrained agent which leads to better results than the market in
+only 10\% of the cases. The analysis of the performed actions shows significantly
+different values, especially for the values for \emph{short} and \emph{cash}, distributed
+among the trained agents. It can therefore be assumed that the trained agent applied to
+this stock leads to inconsistent decisions and therefore to inconsistent and rather less
+promising results.
+
+\subsection{Airbus}
+
+\begin{table}[H]
+  \centering
+  \caption{Airbus -- average returns of agent vs.\ market.}
+  \label{tab:airbus}
+  \begin{tabular}{lrrrrr}
+    \toprule
+     & Agent 1 & Agent 2 & Agent 3 & Agent 4 & Agent 5\\
+    \midrule
+    Trained agent   & 1.430267 & 1.570172 & 2.007212 & 1.276262 & 1.038152\\
+    Market (B\&H)   & 1.217388 & 1.188968 & 1.168107 & 1.195885 & 1.237382\\
+    Agent better (\%) & 0.75 & 0.60 & 0.80 & 0.60 & 0.20\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z058_1.png}
+  \caption{Airbus -- cumulative return ratio: buy and hold vs.\ trained agent.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z059_1.png}
+  \caption{Airbus -- actions chosen by the trained agents over time.}
+\end{figure}
+
+\paragraph{Commentary on the result for Airbus.}
+Given those numbers, it can be stated that the A2C algorithm applied to the Airbus share
+would result in an overall better performance than the simple buy-and-hold strategy. In
+60\% of the cases (on average) the trained agent would show a better performance. The
+analysis of the performed actions shows similar values for four trained agents; only one
+trained agent differs a lot in terms of \emph{cash}. It can therefore be assumed that the
+trained agent applied to this share could lead to consistent and promising results.
+
+\subsection{Toyota}
+
+\begin{table}[H]
+  \centering
+  \caption{Toyota -- average returns of agent vs.\ market.}
+  \label{tab:toyota}
+  \begin{tabular}{lrrrrr}
+    \toprule
+     & Agent 1 & Agent 2 & Agent 3 & Agent 4 & Agent 5\\
+    \midrule
+    Trained agent   & 1.160707 & 1.442139 & 1.185587 & 1.263972 & 1.272148\\
+    Market (B\&H)   & 0.994851 & 1.014057 & 1.044513 & 1.070050 & 1.003871\\
+    Agent better (\%) & 0.80 & 0.70 & 0.80 & 0.85 & 0.75\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z073_1.png}
+  \caption{Toyota -- cumulative return ratio: buy and hold vs.\ trained agent.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z074_1.png}
+  \caption{Toyota -- actions chosen by the trained agents over time.}
+\end{figure}
+
+\paragraph{Commentary on the result for Toyota.}
+Given those numbers, it can be stated that the A2C algorithm applied to the Toyota share
+would result in an overall better performance than the simple buy-and-hold strategy. In
+78\% of the cases (on average) the trained agent would show a better performance. The
+analysis of the performed actions shows different values for all trained agents. It can
+therefore be assumed that the trained agent applied to this share could lead to
+inconsistent behavior but could also lead to overall promising results.

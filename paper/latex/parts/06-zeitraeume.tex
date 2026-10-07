@@ -1,0 +1,37 @@
+\section{Test Trained Agent on Different Time Periods}
+
+The data is divided into train sets and test sets according to the trading time. After the
+agents are trained over a specified timeframe, they are then evaluated on the test set
+consisting of a different timeframe.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z129_1.png}
+  \caption{Train/test split -- cumulative return ratio (split 1).}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z130_1.png}
+  \caption{Train/test split -- cumulative return ratio (split 2).}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z132_1.png}
+  \caption{Train/test split -- cumulative return ratio (split 4).}
+\end{figure}
+
+\paragraph{Comments.}
+Results show that even when the trained agent shows promising results in terms of profits,
+if applied on the test set (except for one trained agent), positive rewards turn into
+negative rewards. Even if they show consistent behavior, the outcome isn't.
+
+As a central conclusion, two things can be stated:
+\begin{itemize}
+  \item If the agent is only trained over 4 years, no reliable predictions can be made
+        about future behavior.
+  \item The algorithm used here offers no possibility of predictability for future
+        behavior in the field of stock trading and, on the contrary, performs worse than
+        simple buy and hold.
+\end{itemize}

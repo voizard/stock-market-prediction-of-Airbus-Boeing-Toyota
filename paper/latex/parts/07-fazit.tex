@@ -1,0 +1,29 @@
+\section{Overall Findings and Limitations}
+
+The great advantage of RL is that an agent is able to learn and to perform actions in a
+dynamically changing environment. It thus allows the best possible decisions to be made
+during specific predefined points in time. The ability to train and improve the policy
+independently through several iteration steps therefore allows an optimal applicability in
+the field of algorithmic trading strategies. At the same time, the trading environment is
+characterized by more or less external influences such as the size and thus the power of
+larger investors, the influence of news and daily developments, decisions of individual
+investors, etc. It can further be assumed that the generalizability of an RL model is
+difficult to realize and it can therefore be a challenge to derive clear future behavioral
+implications.
+
+Applied to my example, I could show that, for example, the application of the A2C
+algorithm to the Boeing stock over the last 10 years would lead to an average negative
+reward compared to a simple buy-and-hold strategy over the same period. This could be
+explained by the fact that especially drastic external influences have led the stock to
+behave in an unusual way. Out of 5 trained agents, one in particular showed very poor
+results of less than 1, which supports my thesis of the time dependency and volatility of
+the model. Nevertheless, for the other two stocks of Airbus and Toyota over a time period
+of 10 years, the algorithm showed significantly better results in some cases, but without
+outputting consistent behavior once the agent is trained several times. It is further
+interesting to note that results in terms of positive rewards do not deviate much when all
+technical indicators are used on the one hand and only the 11 indicators that correlate
+most with tomorrow's log-return of the close price on the other.
+
+By training the agent on the Toyota stock and then testing the model over a different time
+period, I was able to show that the algorithm used on this stock is unlikely to generate
+promising results in the future.

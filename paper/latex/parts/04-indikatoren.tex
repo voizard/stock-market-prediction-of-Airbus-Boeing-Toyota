@@ -1,0 +1,101 @@
+\section{Technical Indicators}
+
+\subsection{Relative Strength Index (RSI)}
+
+The RSI indicator moves between zero and 100, plotting recent price gains versus recent
+price losses. The RSI levels therefore help in estimating momentum and trend strength:
+\begin{equation}
+  RSI_t(n) = \frac{\sum_{k=0}^{n-1}(P_{t-i}-P_{t-i-1})\,\mathbb{1}\{P_{t-i}>P_{t-i-1}\}}{\lvert P_{t-1}-P_{t-i-1}\rvert}\times 100,
+\end{equation}
+where $RSI_t$ is the Relative Strength Index at time $t$, $P_t$ is the value of the index
+at time $t$, and $n$ is the number of RSI periods. The RSI ranges from 0 to 100. A stock
+is considered \emph{overbought} when its RSI is above 70, while it is regarded as
+\emph{oversold} when the RSI is below 30.
+
+\subsection{Moving Average Convergence Divergence (MACD)}
+
+The MACD helps traders see the trend direction as well as the momentum of that trend. It
+also provides a number of trade signals. When the MACD is above zero, the price is in an
+upward phase; if the MACD is below zero, it has entered a bearish period. The indicator is
+composed of two lines: the MACD line and a signal line, which moves slower. When the MACD
+crosses below the signal line, it indicates that the price is falling; when the MACD line
+crosses above the signal line, the price is rising. The MACD is constructed based on
+moving averages: it is calculated by subtracting the longer exponential moving average
+(EMA) from the shorter EMA. The EMA is defined as
+\begin{equation}
+  EMA_t = \frac{2}{n}\times(p_t - EMA_{t-1}) + EMA_{t-1},
+\end{equation}
+where $EMA_t$ is the exponential moving average at time $t$ and $n$ is the number of
+periods for the EMA.
+
+\subsection{On-Balance Volume (OBV)}
+
+The on-balance volume indicator measures the positive and negative flow of volume over
+time. It is calculated using the closing price and the trading volume of a stock.
+Mathematically, the OBV of a stock at time $t$ is defined as
+\begin{equation}
+  OBV_t =
+  \begin{cases}
+    OBV_{t-1} + V_t, & C_t > C_{t-1},\\[2pt]
+    OBV_{t-1} - V_t, & C_t < C_{t-1},
+  \end{cases}
+\end{equation}
+where $C_t$ and $V_t$ are the closing price and the trading volume, respectively, at time
+$t$. By definition, the OBV increases when prices rise and vice versa.
+
+\subsection{Aroon Indicator}
+
+The Aroon indicator measures whether the price is hitting new highs or lows over the
+calculation period (typically 25). The formula for the Aroon oscillator is
+\begin{align}
+  Aroon\ Oscillator &= Aroon\ Up - Aroon\ Down,\\
+  Aroon\ Up &= 100\times\frac{25 - \text{periods since 25-period high}}{25},\\
+  Aroon\ Down &= 100\times\frac{25 - \text{periods since 25-period low}}{25}.
+\end{align}
+When the Aroon Up crosses above the Aroon Down, that is the first sign of a possible trend
+change. If the Aroon Up hits 100 and stays relatively close to that level while the Aroon
+Down stays near zero, that is positive confirmation of an uptrend.
+
+\subsection{Stochastic Oscillator}
+
+The stochastic oscillator measures the current price relative to the price range over a
+number of periods. Plotted between zero and 100, the idea is that when the trend is up,
+the price should be making new highs; in a downtrend, the price tends to make new lows.
+The stochastic tracks whether this is happening:
+\begin{align}
+  CL_t &= P_t - \min(P_t, P_{t-1}, \dots, P_{t-s}),\\
+  HL_t &= \max(P_t, P_{t-1}, \dots, P_{t-8}) - \min(P_t, P_{t-1}, \dots, P_{t-8}),\\
+  RSV  &= \frac{CL_t}{HL_t}\times 100,\\
+  K_t  &= \frac{2}{3}K_{t-1} + \frac{1}{3}RSV_t,\\
+  D_t  &= \frac{2}{3}D_{t-1} + \frac{1}{3}K_t,
+\end{align}
+where $CL_t$ is measured as the lowest closing price in $N$ recent days subtracted from the
+latest closing price; $HL_t$ refers to the difference between the highest and the lowest
+closing price within $N$ days; $RSV_t$ is the $CL_t$ over the $HL_t$; the $K$ value is the
+sum of $1/3$ of the $RSV$ value and $2/3$ of the $K$ value at lag one; and the $D$ value is
+the sum of $1/3$ of the $K$ value and $2/3$ of the $D$ value at lag one. According to the
+above equations, the $K$ and $D$ values range from 0 to 100. Overbought signals are emitted
+as $K>80$ and $K>D$; oversold signals are emitted as $K<20$ and $K<D$.
+
+\subsection{Comments}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z108_1.png}
+  \caption{Selected technical indicators -- comparison of revenues, buy and hold vs.\ agent.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z109_1.png}
+  \caption{Selected technical indicators -- actions chosen by the trained agents over time.}
+\end{figure}
+
+Comparing the graphs on the ratio of revenues between buy and hold and the trained agent,
+it is obvious that the revenues are similarly distributed, so there is no advantage for
+one of the strategies. However, the actions chosen over time give an insight into the fact
+that the trained agents suggest clearly different decisions. It can therefore be assumed
+that the trained agent applied to this share could lead to inconsistent behavior.
+Comparing those results with the agent trained with all indicators from above, it is well
+evident that in both described categories no better result can be achieved by only using
+the 5 indicators I selected.

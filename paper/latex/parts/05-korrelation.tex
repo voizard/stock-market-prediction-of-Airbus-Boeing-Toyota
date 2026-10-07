@@ -1,0 +1,29 @@
+\section{Correlated State Variables}
+
+As an alternative to using all technical indicators, the 11 indicators that correlate most
+with tomorrow's log-return of the closing price were selected as state variables. This
+reduces the dimensionality of the state space while aiming to retain the most informative
+features.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z122_1.png}
+  \caption{Correlated state variables -- cumulative return ratio: buy and hold vs.\ agent.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.78\textwidth]{z123_1.png}
+  \caption{Correlated state variables -- actions chosen by the trained agents over time.}
+\end{figure}
+
+\paragraph{Comments.}
+Comparing the graphs on the ratio of revenues between buy and hold and the trained agent,
+it is obvious that the revenues are clearly better for the trained agent in comparison to
+buy and hold. However, the actions chosen over time give an insight into the fact that the
+trained agents suggest clearly different decisions. It can therefore be assumed that the
+trained agent applied to this share could lead to inconsistent behavior. Comparing those
+results with the agent trained with all indicators from above, it is evident that in the
+case of positive revenues, the trained agent using the 11 indicators that correlate most
+with tomorrow's log-return of the close price provides similar results as the one using
+all indicators.

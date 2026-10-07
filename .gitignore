@@ -1,0 +1,29 @@
+# --- market data (third-party, fetched by data/download_data.py) ---
+data/*.csv
+data/*.json
+
+# --- model artifacts (large binaries; ask if you need them) ---
+models/
+*.zip
+*.pth
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# --- LaTeX build output ---
+paper/latex/out/
+*.aux
+*.log
+*.toc
+*.out
+*.synctex.gz
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

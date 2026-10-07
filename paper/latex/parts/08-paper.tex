@@ -1,0 +1,17 @@
+\section{Summary on One Selected Paper}
+
+\subsection{Deep Robust Reinforcement Learning for Practical Algorithmic Trading}
+\textit{Yang Li, Wanshan Zheng and Zibin Zheng (2016)}
+
+In their 2016 paper, Yang Li, Wanshan Zheng and Zibin Zheng present a further development
+of previously used RL algorithms such as A3C and DQN for application in stock trading, a
+so-called \emph{deep robust reinforcement learning} framework. To cope with the problem of
+uncontrollable external influences, called \emph{noise} in their study, the following steps
+have to be performed first:
+\begin{itemize}
+  \item Sampling random lengths of time units.
+  \item To limit the influence of news, which is usually highest at opening time, the time
+        points between 9:30 am to 11:30 am and 13:00 pm to 15:00 pm are omitted.
+  \item Removal of the low volatility from the calculation in order to mitigate the effect
+        caused by individual investors (as opposed to institutional investors).
+\end{itemize}
