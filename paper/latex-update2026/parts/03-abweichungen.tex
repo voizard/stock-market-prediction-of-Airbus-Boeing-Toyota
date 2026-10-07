@@ -1,0 +1,36 @@
+\section{Methodik-Abweichungen gegenüber dem Original-Notebook}
+\label{sec:abweichungen}
+
+Der Nachbau lief \emph{nicht} in der ursprünglichen conda-Umgebung (Python 3.8.8,
+stable-baselines3 1.6.0, gym 0.21, torch 1.12.1), sondern in einem Linux-Container mit
+aktuellem Stack. Alle Ersetzungen sind bewusst und dokumentiert.
+
+\begin{table}[H]
+  \centering
+  \caption{Ersetzungen im Nachbau.}
+  \label{tab:abweichungen}
+  \begin{tabular}{lll}
+    \toprule
+    Aspekt & Original-Notebook & Nachbau 2026\\
+    \midrule
+    Kursdaten            & \texttt{yfinance} (live)      & lokale CSV\\
+    Technische Indikatoren & \texttt{pandas\_ta} 0.3.14b0 & \texttt{pandas\_ta\_classic}\\
+    Zahl der Indikatoren & 204                          & 348\\
+    Beobachtungsvektor   & 205                          & \textbf{334}\\
+    Parallelisierung     & Multiprocessing-Pool         & seriell\\
+    RL-Stack             & SB3 1.6.0 + gym 0.21         & SB3 2.9 + gymnasium 1.4\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{Die wichtigste Einschränkung ist der Beobachtungsvektor von 334 statt 205.} Der Agent
+sieht mehr Input-Features als im Original, ein Teil der Leistungsdifferenz kann also daher
+stammen und \emph{nicht} vom Datenupdate. Hinzu kommt: \texttt{yfinance} ist von diesem Host
+hart geblockt (HTTP 429 auf allen Endpunkten), weshalb die Kursreihe aus einer lokalen Datei
+gelesen wird, und das Kurs-Paket \texttt{aif\_course} des Dozenten ist nicht mehr verfügbar
+(das Upstream-Repository antwortet mit HTTP 404). Das Environment musste lokal
+rekonstruiert werden; die genauen Ersetzungen sind im Begleitcode dokumentiert.
+
+\textbf{Nicht reproduzierbar} ist der Original-Lauf mit den vorab trainierten Agenten
+(\texttt{A2C\_showcase\_agent1..5}). Es lag nur \emph{ein} Agent vor, ein Vergleich
+\glqq Original-Agent gegen neu trainierter Agent\grqq{} war daher nicht möglich.

@@ -1,0 +1,51 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[ngerman]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{microtype}
+\usepackage[htt]{hyphenat}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{figs/}}
+\captionsetup{font=small,labelfont=bf}
+
+\definecolor{linkblue}{HTML}{0B4A8A}
+
+\title{\bfseries AIF-Projekt --- Update-Report\\[0.4em]
+       \large Stand 7.\ Oktober 2026}
+\author{Christopher Voizard\\ \small MatrNr 106225}
+\date{7.\ Oktober 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\vfill
+\begin{quote}
+\textbf{Einordnung vorab:} Alle Ergebnisse dieses Reports stammen aus einem \emph{Nachbau}
+in einer anderen Umgebung als das Original-Notebook. Die Abweichungen sind in
+Abschnitt~\ref{sec:abweichungen} vollständig dokumentiert und betreffen unter anderem die
+Zahl der Input-Features (334 statt 205) sowie die Bibliotheksversionen. Die Zahlen sind
+deshalb \emph{nicht} 1:1 mit dem Notebook vergleichbar, sondern als unabhängige
+Plausibilitätsprüfung zu lesen.
+\end{quote}
+\vfill
+
+\newpage
+\tableofcontents
+\newpage
+
+\input{parts/01-kennzahlen}
+\input{parts/02-a2c}
+\input{parts/03-abweichungen}
+\input{parts/04-artefakte}
+
+\end{document}

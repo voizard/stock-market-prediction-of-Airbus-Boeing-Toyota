@@ -1,0 +1,47 @@
+\section{Kennzahlen-Update (Fundamentaldaten)}
+
+Methodik wie im Notebook: P/E = trailing PE, P/S = trailing PS, Log-Return = Summe der
+Tages-Log-Returns des adjustierten Schlusskurses über zwölf Monate.
+
+\begin{table}[H]
+  \centering
+  \caption{Fundamentalkennzahlen: Original-Notebook (2022) gegenüber 7.\ Oktober 2026.}
+  \label{tab:kennzahlen}
+  \begin{tabular}{lrrr}
+    \toprule
+    Kennzahl & Boeing (BA) & Airbus (AIR.PA) & Toyota (TM)\\
+    \midrule
+    P/E 2022        & n/a (KeyError) & 19,887 & 10,375\\
+    P/E 2026        & 70,79          & 25,04  & 7,91\\
+    P/S 2022        & 1,502          & 1,458  & 0,0063\\
+    P/S 2026        & 1,60           & 1,93   & 0,68\\
+    Log-Return 2022 & $-0{,}3025$    & $-0{,}1451$ & $-0{,}1486$\\
+    Log-Return 2026 & $-0{,}1558$    & $-0{,}0945$ & $-0{,}0743$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{P/E-Verhältnis.} Die Aussage aus dem Notebook wird bestätigt und teils verschärft.
+Airbus bleibt über der Richtgröße von 15 ($19{,}9 \rightarrow 25{,}0$), Toyota klar darunter
+($10{,}4 \rightarrow 7{,}9$). Boeing liefert erstmals einen Wert: \textbf{70,79} -- eine
+extrem hohe Bewertungskennzahl. Das ist eine Aussage über die Bewertung, nicht über den
+Kurs.
+
+\paragraph{P/S-Verhältnis.} Das Update hat einen \textbf{Datenfehler im Original-Notebook}
+aufgedeckt. Der dort für Toyota berichtete Wert von $0{,}0063$ (im Text als \glqq nahe
+null\grqq{} und damit als sehr günstig gewertet) war ein \texttt{yfinance}-Ausreißer. Der
+tatsächliche Wert liegt bei \textbf{0,68}: Toyota bleibt der günstigste der drei, aber die
+Aussage \glqq nahe null\grqq{} ist falsch. Boeing steht bei 1,60, Airbus bei 1,93.
+
+\paragraph{Log-Returns.} Die Kernaussage hält: Auch im letzten Jahr sind alle drei Aktien
+negativ (BA $-15{,}6\,\%$, AIR $-9{,}5\,\%$, TM $-7{,}4\,\%$), Buy-and-Hold hätte also auch
+diesmal verloren. Über den längeren Horizont seit dem Ende der Notebook-Daten (August 2022)
+stehen jedoch alle drei klar im Plus (BA $+20{,}5\,\%$, TM $+39{,}5\,\%$, AIR $+50$ bis
+$+65\,\%$ über fünf Jahre). Das Verlustbild war damit \emph{fensterspezifisch}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.80\textwidth]{update_2026_1y.png}
+  \caption{Kursentwicklung der drei Aktien über die letzten zwölf Monate
+  (normiert, 100 = vor einem Jahr).}
+\end{figure}

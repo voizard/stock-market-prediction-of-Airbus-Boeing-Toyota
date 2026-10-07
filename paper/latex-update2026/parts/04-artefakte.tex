@@ -1,0 +1,40 @@
+\section{Artefakte und Reproduktion}
+
+\begin{table}[H]
+  \centering
+  \caption{Artefakte des Updates.}
+  \label{tab:artefakte}
+  \begin{tabular}{ll}
+    \toprule
+    Datei & Inhalt\\
+    \midrule
+    \texttt{UPDATE\_2026\_REPORT.md} / \texttt{.pdf} & dieser Report\\
+    \texttt{figs/update\_2026\_a2c.png}  & End-NAV je Episode, Training vs.\ Test\\
+    \texttt{figs/update\_2026\_1y.png}   & Kursentwicklung der drei Aktien, letzte zwölf Monate\\
+    \texttt{updated\_metrics\_final.json} & aktualisierte Fundamentalkennzahlen\\
+    \texttt{results\_ba\_newdata.json}   & Roh-Ergebnisse der fünf Agenten (Training + Test)\\
+    \texttt{agent\_ba\_1..5.zip}         & die fünf neu trainierten A2C-Modelle\\
+    \texttt{env\_runner.py}              & Environment-Aufsatz (lokale Daten, Seriell-Patch)\\
+    \texttt{train\_eval.py}              & Training und Auswertung (Notebook-Protokoll)\\
+    \texttt{plot\_results.py}            & Tabellen-Ausgabe und Abbildung\\
+    \texttt{BA\_5Y\_daily.csv}           & Boeing-Tagesdaten (fünf Jahre)\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Reproduzieren.}
+{\footnotesize
+\begin{verbatim}
+cd aif-latex
+python3 aif_run/train_eval.py      # trainiert 5 Agenten + wertet aus (~35 min)
+python3 aif_run/plot_results.py    # Tabelle + Abbildung
+python3 aif_run/make_pdf.py UPDATE_2026_REPORT.md AIF_Update_2026.pdf
+\end{verbatim}
+}
+
+\paragraph{Hinweis zu den Datenquellen.} Yahoo/\texttt{yfinance} ist von diesem Host hart
+geblockt (HTTP 429 auf allen Endpunkten, auch nach zwanzig Minuten). Boeing und Toyota
+stammen daher aus der History-API von stockanalysis.com, die Airbus-Kurse aus ariva.de
+sowie der EPA:AIR-Seite von stockanalysis.com. Achtung: der Endpunkt
+\texttt{/api/symbol/s/AIR/history} liefert \emph{AAR Corp (US)} und nicht Airbus -- die
+daraus zunächst abgeleiteten Airbus-Zahlen waren falsch und wurden verworfen.

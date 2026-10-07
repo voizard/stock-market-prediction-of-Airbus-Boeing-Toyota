@@ -1,0 +1,92 @@
+\section{A2C-Nachbau auf neuen Daten (Boeing)}
+
+\textbf{Protokoll (aus dem Notebook übernommen):} fünf Agenten mit dem Algorithmus
+\texttt{A2C} (Policy \texttt{MlpPolicy}), 75.000 Trainingsschritte je Agent, Auswertung mit
+\texttt{ai\_trade\_performance} (\texttt{num\_plays=20}). Der Test-Environment übernimmt die
+Merkmalsliste (\texttt{use\_variables}) und den Skalierer des Trainings-Environments. Agent und
+Buy-and-Hold laufen auf denselben zwanzig Episoden-Seeds, der Vergleich ist also fair.
+
+\begin{table}[H]
+  \centering
+  \caption{Zeitfenster des Nachbaus.}
+  \label{tab:fenster}
+  \begin{tabular}{lll}
+    \toprule
+     & Zeitraum & Datenpunkte\\
+    \midrule
+    Trainingsfenster (in-sample)   & 06.10.2021 -- 31.05.2024 & ca.\ 660 Handelstage\\
+    Testfenster (out-of-sample)    & 01.06.2024 -- 06.10.2026 & ca.\ 580 Handelstage\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Ergebnisse je Agent}
+
+End-NAV je Episode (Start $=1{,}0$), Mittel über zwanzig Episoden pro Agent.
+
+\begin{table}[H]
+  \centering
+  \caption{2026-Nachbau auf Boeing: End-NAV, Mittel über zwanzig Episoden.}
+  \label{tab:a2c}
+  \begin{tabular}{crrr|rrr}
+    \toprule
+    \# & Seed & Training Agent & Training B\&H & Test Agent & Test B\&H & Agent besser\\
+    \midrule
+    1 & 100 & 1,6705 & 0,9647 & \textbf{0,5616} & 0,9475 & 0\,\%\\
+    2 & 101 & 2,4073 & 0,9671 & 1,2403 & 0,9408 & 100\,\%\\
+    3 & 102 & 4,0534 & 0,9956 & 0,9828 & 0,9412 & 75\,\%\\
+    4 & 103 & 7,0580 & 0,9711 & 1,0106 & 0,9493 & 70\,\%\\
+    5 & 104 & 5,1547 & 0,9727 & 1,1326 & 0,9485 & 80\,\%\\
+    \midrule
+    $\varnothing$ & & 4,0688 & 0,9742 & 0,9856 & 0,9455 & 65\,\%\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Handelsverhalten}
+
+\begin{table}[H]
+  \centering
+  \caption{Aktionsverteilung der Agenten (je eine Episode).}
+  \label{tab:aktionen}
+  \begin{tabular}{crrr|rrr}
+    \toprule
+    \# & Training short & Training cash & Training long & Test short & Test cash & Test long\\
+    \midrule
+    1 & 268 & 18  & 348 & 239 & 17  & 299\\
+    2 & 295 & 39  & 300 & 304 & 24  & 227\\
+    3 & 297 & 24  & 313 & 279 & 29  & 247\\
+    4 & 246 & 212 & 176 & 260 & 201 & 94\\
+    5 & 296 & 15  & 323 & 309 & 12  & 234\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Alle Agenten handeln überwiegend long; nur Agent~4 hält eine große Cash-Position. Short-Positionen
+werden fast immer gehalten, aber selten stark gewichtet.
+
+\subsection{Interpretation}
+
+\paragraph{In-sample ist kein Beleg für Können.} Im Trainingsfenster erreichen die Agenten im
+Mittel einen NAV von 4,07 gegenüber 0,97 für Buy-and-Hold und schlagen die Benchmark in
+\emph{jeder} Episode. Das ist kein Ergebnis: Hier wurde trainiert und hier wurde gemessen, die
+Zahl zeigt nur, dass die Agenten das Fenster auswendig gelernt haben.
+
+\paragraph{Out-of-sample ist das Bild nüchtern.} Im Testfenster liegt der Mittelwert bei
+0,9856 gegenüber 0,9455 für Buy-and-Hold, der Agent ist in \textbf{65\,\%} der Episoden
+besser -- aber mit sehr großer Streuung: Agent~1 verliert deutlich (0,56), Agent~2 gewinnt
+klar (1,24), und zwei von fünf Agenten verlieren in mindestens einem Viertel der Episoden
+gegen Buy-and-Hold. Der Vorteil liegt innerhalb der Seed-Streuung und ist
+\textbf{nicht signifikant}.
+
+\paragraph{Buy-and-Hold liegt in beiden Fenstern unter 1,0}, Boeing hat also in beiden
+Zeiträumen an Wert verloren. Die Frage lautet hier \glqq weniger verlieren\grqq{} statt
+\glqq gewinnen\grqq. Insgesamt \textbf{stützt} der Nachbau die Konklusion des Original-Notebooks:
+A2C liefert keine verlässliche Outperformance.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.98\textwidth]{update_2026_a2c.png}
+  \caption{End-NAV je Episode (Mittel der fünf Agenten), links Trainingsfenster
+  (in-sample), rechts Testfenster (out-of-sample).}
+\end{figure}
