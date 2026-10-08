@@ -9,7 +9,9 @@
     \toprule
     Datei & Inhalt\\
     \midrule
-    \texttt{UPDATE\_2026\_REPORT.md} / \texttt{.pdf} & dieser Report\\
+    \texttt{AIF\_Update\_2026.pdf} & dieser Report (aus LaTeX gebaut)\\
+    \texttt{latex-update2026/} & LaTeX-Quelle des Reports (Tectonic)\\
+    \texttt{UPDATE\_2026\_REPORT.md} & Markdown-Fassung desselben Inhalts\\
     \texttt{figs/update\_2026\_a2c.png}  & End-NAV je Episode, Training vs.\ Test (Boeing, 5 Seeds)\\
     \texttt{figs/update\_2026\_margins.png} & In-Sample- vs.\ Out-of-Sample-Marge je Aktie (20 Seeds)\\
     \texttt{figs/update\_2026\_1y.png}   & Kursentwicklung der drei Aktien, letzte zwölf Monate\\
@@ -37,7 +39,7 @@ python3 aif_run/train_eval_multi.py BA         # 20 Seeds, Boeing
 sh aif_run/run_seeds20.sh                      # 20 Seeds fuer TM und BA
 python3 aif_run/analyze_seeds.py TM BA AIR     # Tabellen + Signifikanztests
 python3 aif_run/plot_margins.py                # Abbildung Train- vs. Testmarge
-python3 aif_run/make_pdf.py UPDATE_2026_REPORT.md AIF_Update_2026.pdf
+cd paper/latex-update2026 && tectonic -X compile main.tex --outdir out   # Report-PDF
 \end{verbatim}
 }
 

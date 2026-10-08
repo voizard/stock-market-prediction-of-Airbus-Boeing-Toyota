@@ -1,7 +1,7 @@
 # A2C auf Transportaktien — Update-Report (Stand 07.10.2026)
 
 **Projekt:** Applied Reinforcement Learning (A2C) on Transportation Stocks — 2026 data update
-**Autor:** Christopher Voizard, MatrNr 106225
+**Autor:** Christopher Voizard
 **Zweck:** Fortschreibung des abgegebenen Notebooks mit Daten bis 06.10.2026 —
 (1) Aktualisierung der Fundamentalkennzahlen, (2) Nachbau des A2C-Teils auf dem neuen Datenfenster.
 
@@ -194,7 +194,9 @@ nachgeliefert; ein Vergleich „Original-Agent vs. neu trainierter Agent" war da
 
 | Datei | Inhalt |
 |---|---|
-| `UPDATE_2026_REPORT.md` / `.pdf` | dieser Report |
+| `paper/AIF_Update_2026.pdf` | dieser Report (aus LaTeX gebaut) |
+| `paper/latex-update2026/` | LaTeX-Quelle des Reports (Tectonic) |
+| `paper/UPDATE_2026_REPORT.md` | Markdown-Fassung desselben Inhalts |
 | `figs/update_2026_a2c.png` | End-NAV je Episode, Train vs. Test (Boeing, 5 Seeds) |
 | `figs/update_2026_margins.png` | **In-Sample- vs. Out-of-Sample-Marge je Aktie (20 Seeds)** |
 | `figs/update_2026_1y.png` | Kursentwicklung der 3 Aktien, letzte 12 Monate |
@@ -219,7 +221,7 @@ python3 aif_run/train_eval_multi.py BA           # 20 Seeds, Boeing
 aif_run/run_seeds20.sh                           # 20 Seeds für TM und BA
 python3 aif_run/analyze_seeds.py TM BA AIR       # Tabellen + Signifikanztests
 python3 aif_run/plot_margins.py                  # Abbildung Train- vs. Testmarge
-python3 aif_run/make_pdf.py UPDATE_2026_REPORT.md AIF_Update_2026.pdf
+cd paper/latex-update2026 && tectonic -X compile main.tex --outdir out   # Report-PDF
 ```
 
 Ein Lauf ist unterbrechbar: `train_eval_multi.py` überspringt Agenten, die bereits als `.zip`

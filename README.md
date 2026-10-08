@@ -129,8 +129,10 @@ The price CSV is **not** redistributed here — it belongs to the data provider.
 │   ├── analyze_seeds.py   mean, spread, 95 % CI, paired t-test
 │   ├── plot_margins.py    in-sample vs. out-of-sample margin figure
 │   └── data_update/       scripts that fetched the 2026 market data
-├── paper/                 LaTeX report, PDF and the 2026 update report
-│   └── latex/             main.tex, parts/, figures, code listing
+├── paper/                 LaTeX sources and PDFs of both reports
+│   ├── latex/             main report: main.tex, parts/, figures, code listing
+│   ├── latex-update2026/  2026 update report: main.tex, parts/, figures
+│   └── UPDATE_2026_REPORT.md  Markdown version of the update report
 ├── figures/               result figures
 └── results/               raw JSON of the 2026 re-run
 ```
@@ -149,9 +151,9 @@ python3 src/train_eval_multi.py BA
 python3 src/analyze_seeds.py TM BA AIR # tables + significance tests
 python3 src/plot_margins.py            # margin figure
 
-# reports
-python3 src/make_pdf.py paper/UPDATE_2026_REPORT.md paper/AIF_Update_2026.pdf
-cd paper/latex && mkdir -p out && tectonic main.tex --outdir out
+# reports (LaTeX via Tectonic)
+cd paper/latex && tectonic -X compile main.tex --outdir out              # main report
+cd paper/latex-update2026 && tectonic -X compile main.tex --outdir out   # 2026 update
 ```
 
 `src/train_eval.py` needs the helper modules `aif_environment.py` and `aif_analysis.py` in
@@ -161,7 +163,7 @@ cd paper/latex && mkdir -p out && tectonic main.tex --outdir out
 
 The notebook in `notebooks/` is the author's own work. It was cleaned up (spelling,
 execution counters, relative paths) without changing results. The 2026 update
-(`paper/UPDATE_2026_REPORT.md`, `src/`) is independent work by the same author. The template
+(`paper/latex-update2026/`, `src/`) is independent work by the same author. The template
 and helper package the notebook builds on belong to a third party and are **not**
 redistributed here.
 
