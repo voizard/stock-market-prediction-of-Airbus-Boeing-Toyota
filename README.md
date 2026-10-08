@@ -12,9 +12,16 @@ tests whether the agent's actions carry any predictive value.
   reliably.** In the original run the agent reached a return of 1.167 vs. the market's 1.264
   on Boeing.
 - **The 2026 re-run on fresh data (Boeing, 2024-06 → 2026-10, out-of-sample)** gives
-  agent **0.986** vs. buy-and-hold **0.946** on average NAV, with the agent ahead in **65 %**
-  of the 20 evaluation episodes — but with a spread from **0.56** (agent 1) to **1.24**
-  (agent 2). The advantage is **within seed variance and not significant**.
+  agent **1.094** vs. buy-and-hold **0.943** on average NAV over **20 seeds**, with the agent
+  ahead in **75 %** of the 400 evaluation episodes. The margin (**+0.151**, paired *t*-test
+  *p* = 0.0037) **is significant** — with only 5 seeds it had been +0.040 and inside the seed
+  spread, i.e. indistinguishable from noise.
+- **With 20 seeds on all three stocks, the in-sample margin does not predict the out-of-sample
+  outcome at all.** In-sample the agent beats buy-and-hold everywhere (+0.53 to +2.70,
+  *p* < 0.0001); out-of-sample only Boeing keeps an advantage, **Airbus lands exactly on
+  buy-and-hold** (+0.005, *p* = 0.89, 47.8 % hit rate) and **Toyota turns negative**
+  (−0.130, *p* = 0.0001, 13.8 % hit rate). Toyota was the *second best* in-sample and the
+  *worst* out-of-sample; Airbus the *worst* in-sample and the *second best* out-of-sample.
 - **Buy-and-hold loses money in both windows** (NAV 0.974 in-sample, 0.946 out-of-sample):
   Boeing fell over both periods, so the real question is "lose less", not "win".
 - **The data update uncovered a factual error in the original notebook:** the reported Toyota
@@ -23,7 +30,30 @@ tests whether the agent's actions carry any predictive value.
   (BA −15.6 %, AIR −9.5 %, TM −7.4 %), but **positive since August 2022**
   (BA +20 %, TM +40 %, AIR +50–65 %) — the loss picture was window-specific.
 
-## Results — 2026 re-run (Boeing, 5 agents, 20 episodes each)
+## Results — 2026 re-run, 20 seeds per stock
+
+Mean end-NAV over 20 seeds (100–119), start = 1.0. Margin = agent − buy-and-hold; *p* from a
+paired *t*-test over the seed differences. Hit rate over all 400 episodes per stock and window.
+
+| Stock | Window | Agent | Spread | 95 % CI | Buy & Hold | Margin | *p* | Hit rate |
+|---|---|---:|---:|---|---:|---:|---:|---:|
+| Boeing | in-sample | 3.669 | 1.400 | [3.01; 4.33] | 0.973 | **+2.697** | < 0.0001 | 100.0 % |
+| Boeing | out-of-sample | 1.094 | 0.231 | [0.99; 1.20] | 0.943 | **+0.151** | 0.0037 | 75.0 % |
+| Airbus | in-sample | 1.818 | 0.423 | [1.62; 2.02] | 1.292 | **+0.526** | < 0.0001 | 79.8 % |
+| Airbus | out-of-sample | 1.096 | 0.156 | [1.02; 1.17] | 1.091 | **+0.005** | 0.887 | 47.8 % |
+| Toyota | in-sample | 2.455 | 0.724 | [2.12; 2.79] | 1.594 | **+0.861** | < 0.0001 | 87.0 % |
+| Toyota | out-of-sample | 0.852 | 0.144 | [0.79; 0.92] | 0.983 | **−0.130** | 0.0001 | 13.8 % |
+
+![In-sample vs. out-of-sample margin per stock](figures/update_2026_margins.png)
+
+Training window 2021-10-06 → 2024-05-31 (in-sample), test window 2024-06-01 → 2026-10-06
+(out-of-sample). The in-sample column is **not** evidence of skill — the agents were trained
+on exactly that window. Raw numbers: `results/results_{ba,air,tm}_newdata.json`.
+
+## Results — Boeing, 5 agents, 20 episodes each
+
+The earlier, smaller run (seeds 100–104, a subset of the 20 above). Its test advantage of
++0.04 NAV points was **not** significant — the reason the run was extended to 20 seeds.
 
 | # | Seed | Train agent | Train B&H | Agent better | Test agent | Test B&H | Agent better |
 |---|------|------------:|----------:|-------------:|-----------:|---------:|-------------:|
@@ -34,10 +64,6 @@ tests whether the agent's actions carry any predictive value.
 | 5 | 104 | 5.1547 | 0.9727 | 100 % | 1.1326 | 0.9485 | 80 % |
 | **Ø** | | **4.0688** | **0.9742** | **100 %** | **0.9856** | **0.9455** | **65 %** |
 
-Training window 2021-10-06 → 2024-05-31 (in-sample), test window 2024-06-01 → 2026-10-06
-(out-of-sample). The in-sample column is **not** evidence of skill — the agents were trained
-on exactly that window. Full numbers: `results/results_ba_newdata.json`.
-
 ![A2C on Boeing, new data](figures/update_2026_a2c.png)
 
 ## Data sources
@@ -45,7 +71,7 @@ on exactly that window. Full numbers: `results/results_ba_newdata.json`.
 | Data | Source | Note |
 |---|---|---|
 | Boeing / Toyota prices | stockanalysis.com history API | `data/download_data.py` |
-| Airbus prices | stockanalysis.com (EPA:AIR) + ariva.de | not fully scriptable; see `src/data_update/` |
+| Airbus prices | Yahoo Finance, `AIR.PA` (Euronext Paris) | 1,307 trading days to 2026-10-06 |
 | P/E, P/S | stockanalysis.com | trailing values |
 | RL helper modules (`aif_course`) | third-party helper, available locally, **not** part of this repository | upstream repository: **404** |
 
@@ -56,10 +82,13 @@ The price CSV is **not** redistributed here — it belongs to the data provider.
 
 - **Fundamentals**: P/E and P/S as trailing values; "12-month return" as the sum of daily
   log returns of the adjusted close.
-- **RL**: `A2C("MlpPolicy")`, 75,000 timesteps per agent, five seeds (100–104); evaluation with
-  the helper package's `ai_trade_performance(num_plays=20)`. The test environment re-uses the training
+- **RL**: `A2C("MlpPolicy")`, 75,000 timesteps per agent; **20 seeds (100–119) per stock** in
+  the extended run, five seeds (100–104) in the first Boeing run; evaluation with the helper
+  package's `ai_trade_performance(num_plays=20)`. The test environment re-uses the training
   environment's feature list and scaler, as in the notebook.
 - **Fair comparison**: agent and buy-and-hold run on the *same* 20 episode seeds.
+- **Statistics**: margin = mean paired difference agent − buy-and-hold over the seeds;
+  two-sided 95 % CI and paired *t*-test over the 20 seed differences (`src/analyze_seeds.py`).
 
 ## Limitations (read before trusting any number)
 
@@ -78,7 +107,12 @@ The price CSV is **not** redistributed here — it belongs to the data provider.
 4. **Only one pre-trained agent was available** (`A2C_showcase_agent.zip`), while the notebook
    uses five — so "original agent vs. new agent" could not be compared.
 5. **In-sample results are not evidence.** The train column only shows that the agents learned
-   the training window.
+   the training window — which the 20-seed run makes explicit: the in-sample margin is large
+   everywhere and predicts nothing about the test window.
+6. **20 seeds are better than 5, but still a small sample.** The confidence intervals in the
+   table above are correspondingly wide.
+7. **Airbus prices come from a different source** than Boeing and Toyota (Yahoo, `AIR.PA`,
+   in EUR, 1,307 trading days to 2026-10-06).
 
 ## Repository structure
 
@@ -90,6 +124,10 @@ The price CSV is **not** redistributed here — it belongs to the data provider.
 ├── data/                  README + download script (no data committed)
 ├── notebooks/             the cleaned assignment notebook
 ├── src/                   code without markdown/outputs + the 2026 re-run
+│   ├── train_eval.py      first re-run (Boeing, 5 agents, notebook protocol)
+│   ├── train_eval_multi.py  extended run, any ticker, resumable
+│   ├── analyze_seeds.py   mean, spread, 95 % CI, paired t-test
+│   ├── plot_margins.py    in-sample vs. out-of-sample margin figure
 │   └── data_update/       scripts that fetched the 2026 market data
 ├── paper/                 LaTeX report, PDF and the 2026 update report
 │   └── latex/             main.tex, parts/, figures, code listing
@@ -104,7 +142,12 @@ pip install -r requirements.txt
 
 python3 data/download_data.py          # fetches data/BA_5Y_daily.csv (~1255 rows)
 python3 src/train_eval.py              # trains 5 A2C agents, evaluates train + test (~35 min)
-python3 src/plot_results.py            # prints the table above and writes the figure
+python3 src/plot_results.py            # prints the 5-agent table and writes the figure
+
+# extended run: 20 seeds per stock (~5.5 min per agent, ~2 h per stock)
+python3 src/train_eval_multi.py BA
+python3 src/analyze_seeds.py TM BA AIR # tables + significance tests
+python3 src/plot_margins.py            # margin figure
 
 # reports
 python3 src/make_pdf.py paper/UPDATE_2026_REPORT.md paper/AIF_Update_2026.pdf

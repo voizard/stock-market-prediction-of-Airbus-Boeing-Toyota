@@ -1,0 +1,98 @@
+\section{Seed-Erweiterung: alle drei Aktien mit 20 Seeds}
+
+\paragraph{Warum überhaupt mehr Seeds?} Abschnitt~\ref{sec:a2c} kommt auf fünf Agenten
+(Seeds 100--104). Damit lag der Testvorteil auf Boeing bei $+0{,}04$ NAV-Punkten --- kleiner
+als die Streuung zwischen den Agenten. Aus einer so kleinen Stichprobe lässt sich nicht
+entscheiden, ob das ein Vorteil oder Rauschen ist. Deshalb wurde das Protokoll unverändert auf
+\textbf{20 Seeds (100--119)} erweitert und gleichzeitig auf \textbf{alle drei Aktien} angewandt,
+einschließlich Airbus auf den neuen Daten. Die fünf Agenten aus Abschnitt~\ref{sec:a2c} sind
+eine Teilmenge dieser zwanzig.
+
+Trainings- und Testfenster sind für alle drei Aktien identisch mit Abschnitt~\ref{sec:a2c}
+(06.10.2021--31.05.2024 bzw.\ 01.06.2024--06.10.2026). Verglichen wird jeweils gegen
+Buy-and-Hold auf \emph{denselben} zwanzig Episoden-Seeds. Die \emph{Marge} ist die mittlere
+gepaarte Differenz Agent $-$ Buy-and-Hold über die Seeds; deren Streuung liefert das
+95-%-Konfidenzintervall.
+
+\subsection{Ergebnisse}
+
+\begin{table}[H]
+  \centering
+  \caption{2026-Nachbau, 20 Seeds je Aktie. End-NAV (Start $=1{,}0$), Mittel über die Seeds;
+           $p$ aus dem gepaarten $t$-Test über die Seed-Differenzen ($H_0$: Marge $=0$);
+           Trefferquote über alle 400 Episoden je Aktie und Fenster.}
+  \label{tab:seeds}
+  \small
+  \begin{tabular}{llrrrrrr}
+    \toprule
+    Aktie & Fenster & Agent & Streuung & 95-\%-KI & Buy \& Hold & Marge & $p$\\
+    \midrule
+    Boeing & Training & 3,669 & 1,400 & [3,01; 4,33] & 0,973 & $\mathbf{+2{,}697}$ & $<0{,}0001$\\
+    Boeing & Test     & 1,094 & 0,231 & [0,99; 1,20] & 0,943 & $\mathbf{+0{,}151}$ & $0{,}0037$\\
+    Airbus & Training & 1,818 & 0,423 & [1,62; 2,02] & 1,292 & $\mathbf{+0{,}526}$ & $<0{,}0001$\\
+    Airbus & Test     & 1,096 & 0,156 & [1,02; 1,17] & 1,091 & $\mathbf{+0{,}005}$ & $0{,}887$\\
+    Toyota & Training & 2,455 & 0,724 & [2,12; 2,79] & 1,594 & $\mathbf{+0{,}861}$ & $<0{,}0001$\\
+    Toyota & Test     & 0,852 & 0,144 & [0,79; 0,92] & 0,983 & $\mathbf{-0{,}130}$ & $0{,}0001$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{Trefferquoten (Anteil der Episoden, in denen der Agent Buy-and-Hold schlägt)
+           sowie Rendite/Risiko-Verhältnis im Testfenster.}
+  \label{tab:treffer}
+  \begin{tabular}{lrrr}
+    \toprule
+    Aktie & Trefferquote Training & Trefferquote Test & Rendite/Risiko Test (Agent vs.\ B\&H)\\
+    \midrule
+    Boeing & 100,0\,\% & 75,0\,\% & $0{,}299$ vs.\ $-0{,}160$ \quad ($p=0{,}049$)\\
+    Airbus & 79,8\,\%  & 47,8\,\% & $0{,}146$ vs.\ $0{,}322$ \quad ($p=0{,}22$)\\
+    Toyota & 87,0\,\%  & 13,8\,\% & $-1{,}038$ vs.\ $0{,}404$ \quad ($p<0{,}0001$)\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{update_2026_margins.png}
+  \caption{Marge (Agent $-$ Buy-and-Hold) im Trainings- und im Testfenster je Aktie.
+  Fehlerbalken: 95-\%-Konfidenzintervall der mittleren gepaarten Differenz über 20 Seeds.
+  Rechts: Anteil der In-Sample-Marge, der out-of-sample übrig bleibt.}
+  \label{fig:margins}
+\end{figure}
+
+\subsection{Interpretation}
+
+\paragraph{In-sample schlägt der Agent überall deutlich.} Zwischen $+0{,}53$ und $+2{,}70$
+NAV-Punkten, in allen drei Fällen mit $p<0{,}0001$ und Trefferquoten von 80 bis 100\,\%.
+Das ist erwartbar und \emph{kein} Beleg für Können: Hier wurde trainiert und hier wurde gemessen.
+
+\paragraph{Out-of-sample bleibt fast nichts übrig.} Boeing behält einen signifikanten Vorteil
+($+0{,}151$, $p=0{,}0037$), Airbus landet exakt auf Buy-and-Hold ($+0{,}005$, $p=0{,}89$,
+Trefferquote 47,8\,\% --- ein Münzwurf), und Toyota dreht ins Gegenteil
+($-0{,}130$, $p=0{,}0001$, Trefferquote 13,8\,\%).
+
+\paragraph{Die In-Sample-Marge sagt den Out-of-Sample-Erfolg nicht vorher.} Toyota war im
+Training der zweitbeste und im Test der schlechteste, Airbus im Training der schwächste und im
+Test der zweitbeste; die Rangfolge der beiden Fenster hat nichts miteinander zu tun. Anschaulich
+rechts in Abbildung~\ref{fig:margins}: von der Trainingsmarge bleiben bei Boeing 5,6\,\%,
+bei Airbus 0,9\,\% und bei Toyota $-15{,}1\,\%$.
+
+\paragraph{Die Zahl der Seeds hat ein Urteil gedreht.} Mit fünf Seeds war der Boeing-Testvorteil
+($+0{,}040$, Trefferquote 65\,\%) innerhalb der Streuung und damit nicht signifikant; mit zwanzig
+Seeds sind es $+0{,}151$ bei $p=0{,}0037$. Dasselbe Experiment, dasselbe Protokoll --- nur eine
+belastbare Stichprobe.
+
+\paragraph{Gegenüber dem Original-Notebook (2013--2017)} war dort für alle drei Aktien ein
+Agentenvorteil messbar (Toyota 1,27 gegen 1,00 bei 80\,\% Trefferquote). Auf den neuen Daten ist
+bei Toyota nichts davon übrig --- es kippt ins signifikant Schlechtere. Das \textbf{stützt} die
+Grundaussage des Notebooks, dass A2C keine verlässliche Outperformance liefert, und schärft sie:
+Der Nachbau findet keine Aktie, bei der der Vorteil robust groß wäre.
+
+\paragraph{Einschränkungen.} Zwanzig Seeds sind deutlich besser als fünf, aber weiterhin eine
+kleine Stichprobe; die Konfidenzintervalle in Tabelle~\ref{tab:seeds} sind entsprechend breit.
+Die Airbus-Kursreihe stammt aus einer anderen Quelle als Boeing und Toyota (Yahoo,
+\texttt{AIR.PA}, in Euro, 1.307 Handelstage bis 06.10.2026). Und es gilt weiterhin die
+Haupteinschränkung aus Abschnitt~\ref{sec:abweichungen}: der Beobachtungsvektor ist mit
+\textbf{335} Merkmalen größer als im Original (205), ein Teil der Differenz kann daher stammen.

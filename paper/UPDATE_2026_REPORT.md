@@ -101,7 +101,75 @@ rechts Testfenster.
 
 ---
 
-## 3. Methodik-Abweichungen gegenüber dem Original-Notebook
+## 3. Seed-Erweiterung: alle drei Aktien mit 20 Seeds
+
+**Warum überhaupt mehr Seeds?** Abschnitt 2 kommt auf fünf Agenten (Seeds 100–104). Damit lag
+der Testvorteil auf Boeing bei +0,04 NAV-Punkten — kleiner als die Streuung zwischen den
+Agenten. Aus einer so kleinen Stichprobe lässt sich nicht entscheiden, ob das ein Vorteil oder
+Rauschen ist. Deshalb wurde das Protokoll unverändert auf **20 Seeds (100–119)** erweitert und
+gleichzeitig auf **alle drei Aktien** angewandt, einschließlich Airbus auf den neuen Daten.
+Die fünf Agenten aus Abschnitt 2 sind eine Teilmenge dieser zwanzig.
+
+Trainings- und Testfenster sind für alle drei Aktien identisch mit Abschnitt 2
+(06.10.2021–31.05.2024 bzw. 01.06.2024–06.10.2026). Verglichen wird jeweils gegen Buy-and-Hold
+auf **denselben** zwanzig Episoden-Seeds. Die Marge ist die mittlere gepaarte Differenz
+Agent − Buy-and-Hold über die Seeds; die Streuung zwischen den Seeds liefert das 95-%-Konfidenzintervall.
+
+### 3.1 Ergebnisse
+
+| Aktie | Fenster | Agent (Mittel) | Streuung | 95-%-KI | Buy & Hold | Marge | p-Wert | Trefferquote |
+|---|---|---|---|---|---|---|---|---|
+| Boeing | Training | 3,669 | 1,400 | [3,01; 4,33] | 0,973 | **+2,697** | < 0,0001 | 100,0 % |
+| Boeing | Test | 1,094 | 0,231 | [0,99; 1,20] | 0,943 | **+0,151** | 0,0037 | 75,0 % |
+| Airbus | Training | 1,818 | 0,423 | [1,62; 2,02] | 1,292 | **+0,526** | < 0,0001 | 79,8 % |
+| Airbus | Test | 1,096 | 0,156 | [1,02; 1,17] | 1,091 | **+0,005** | 0,887 | 47,8 % |
+| Toyota | Training | 2,455 | 0,724 | [2,12; 2,79] | 1,594 | **+0,861** | < 0,0001 | 87,0 % |
+| Toyota | Test | 0,852 | 0,144 | [0,79; 0,92] | 0,983 | **−0,130** | 0,0001 | 13,8 % |
+
+*End-NAV, Start = 1,0; Mittel über 20 Seeds. p-Wert aus dem gepaarten t-Test über die
+Seed-Differenzen (H0: Marge = 0). Trefferquote über alle 400 Episoden je Aktie und Fenster.*
+
+Rendite/Risiko-Verhältnis im Testfenster: Boeing **0,299** gegen −0,160 (p = 0,049),
+Toyota **−1,038** gegen +0,404 (p < 0,0001), Airbus 0,146 gegen 0,322 (p = 0,22).
+
+![In-Sample- vs. Out-of-Sample-Marge je Aktie](figs/update_2026_margins.png)
+
+### 3.2 Interpretation
+
+1. **In-sample schlägt der Agent überall deutlich** — zwischen +0,53 und +2,70 NAV-Punkten,
+   in allen drei Fällen mit p < 0,0001 und Trefferquoten von 80 bis 100 %. Das ist erwartbar
+   und **kein** Beleg für Können: Hier wurde trainiert und hier wurde gemessen.
+2. **Out-of-sample bleibt davon fast nichts übrig.** Boeing behält einen signifikanten Vorteil
+   (+0,151, p = 0,0037), Airbus landet exakt auf Buy-and-Hold (+0,005, p = 0,89,
+   Trefferquote 47,8 % — ein Münzwurf), und Toyota dreht ins Gegenteil
+   (−0,130, p = 0,0001, Trefferquote 13,8 %).
+3. **Die In-Sample-Marge sagt den Out-of-Sample-Erfolg nicht vorher.** Toyota war im Training
+   der zweitbeste und im Test der schlechteste, Airbus im Training der schwächste und im Test
+   der zweitbeste. Die Rangfolge der beiden Fenster hat nichts miteinander zu tun. Anschaulich
+   in der rechten Hälfte der Abbildung: von der Trainingsmarge bleiben bei Boeing 5,6 %,
+   bei Airbus 0,9 % und bei Toyota −15,1 %.
+4. **Die Zahl der Seeds hat ein Urteil gedreht.** Mit fünf Seeds war der Boeing-Testvorteil
+   (+0,040, Trefferquote 65 %) innerhalb der Streuung und damit nicht signifikant; mit zwanzig
+   Seeds sind es +0,151 bei p = 0,0037. Dasselbe Experiment, dasselbe Protokoll — nur eine
+   belastbare Stichprobe.
+5. **Gegenüber dem Original-Notebook (2013–2017)** war dort für alle drei Aktien ein
+   Agentenvorteil messbar (Toyota 1,27 gegen 1,00 bei 80 % Trefferquote). Auf den neuen Daten
+   ist bei Toyota nichts davon übrig — es kippt ins signifikant Schlechtere. Das stützt die
+   Grundaussage des Notebooks, dass A2C keine verlässliche Outperformance liefert, und schärft
+   sie: der Nachbau findet **keine** Aktie, bei der der Vorteil robust groß wäre.
+
+### 3.3 Einschränkungen
+
+- Zwanzig Seeds sind deutlich besser als fünf, aber weiterhin eine kleine Stichprobe; die
+  Konfidenzintervalle in der Tabelle sind entsprechend breit.
+- Die Airbus-Kursreihe stammt aus einer anderen Quelle als Boeing und Toyota (Yahoo,
+  `AIR.PA`, in Euro) und umfasst 1.307 Handelstage bis 06.10.2026.
+- Es gilt weiterhin die Haupteinschränkung aus Abschnitt 4: der Beobachtungsvektor ist mit
+  **335** Merkmalen größer als im Original (205), ein Teil der Differenz kann daher stammen.
+
+---
+
+## 4. Methodik-Abweichungen gegenüber dem Original-Notebook
 
 Der Nachbau lief **nicht** in Chris' conda-Env (`tensorflow`, Python 3.8.8, SB3 1.6.0,
 gym 0.21), sondern in einem Linux-Container. Alle Abweichungen sind bewusst und dokumentiert:
@@ -122,26 +190,37 @@ daraus stammen und ist **nicht** auf das reine Datenupdate zurückzuführen.
 (`A2C_showcase_agent1..5`). Chris hat nur **einen** Agenten (`A2C_showcase_agent.zip`)
 nachgeliefert; ein Vergleich „Original-Agent vs. neu trainierter Agent" war daher nicht möglich.
 
-## 4. Artefakte
+## 5. Artefakte
 
 | Datei | Inhalt |
 |---|---|
 | `UPDATE_2026_REPORT.md` / `.pdf` | dieser Report |
-| `figs/update_2026_a2c.png` | End-NAV je Episode, Train vs. Test |
+| `figs/update_2026_a2c.png` | End-NAV je Episode, Train vs. Test (Boeing, 5 Seeds) |
+| `figs/update_2026_margins.png` | **In-Sample- vs. Out-of-Sample-Marge je Aktie (20 Seeds)** |
 | `figs/update_2026_1y.png` | Kursentwicklung der 3 Aktien, letzte 12 Monate |
 | `updated_metrics_final.json` | aktualisierte Fundamentalkennzahlen |
-| `aif_run/results_ba_newdata.json` | Roh-Ergebnisse der 5 Agenten (Train + Test) |
-| `aif_run/agent_ba_1..5.zip` | die 5 neu trainierten A2C-Modelle |
+| `results/results_ba_newdata.json` | Roh-Ergebnisse Boeing (20 Seeds, Train + Test) |
+| `results/results_air_newdata.json` | Roh-Ergebnisse Airbus (20 Seeds, Train + Test) |
+| `results/results_tm_newdata.json` | Roh-Ergebnisse Toyota (20 Seeds, Train + Test) |
+| `aif_run/agent_{ba,air,tm}_1..20.zip` | die 60 neu trainierten A2C-Modelle |
 | `aif_run/env_runner.py` | Env-Aufsatz (lokale Daten, pandas_ta-Alias, Seriell-Patch) |
-| `aif_run/train_eval.py` | Training + Auswertung (Protokoll aus dem Notebook) |
-| `aif_run/plot_results.py` | Tabellen-Ausgabe + Figur |
-| `data/BA_5Y_daily.csv` | Boeing-Tagesdaten (5 Jahre) |
+| `aif_run/train_eval_multi.py` | Training + Auswertung für beliebige Ticker, mit Resume |
+| `aif_run/analyze_seeds.py` | Auswertung: Mittel, Streuung, 95-%-KI, gepaarter t-Test |
+| `aif_run/plot_margins.py` | Abbildung Train- vs. Testmarge je Aktie |
+| `aif_run/train_eval.py` | Training + Auswertung (Notebook-Protokoll, 5 Agenten) |
+| `data/{BA,AIR,TM}_5Y_daily.csv` | Tagesdaten der drei Aktien (5 Jahre) |
 | `course/aif_environment.py`, `course/aif_analysis.py` | Chris' Kurs-Module (Laufzeit-Abhängigkeit) |
 
 **Reproduzieren:**
 ```bash
 cd aif-latex
-python3 aif_run/train_eval.py      # trainiert 5 Agenten + wertet aus  (~35 min)
-python3 aif_run/plot_results.py    # Tabelle + Figur
+python3 aif_run/train_eval.py                    # Boeing, 5 Agenten, Notebook-Protokoll (~35 min)
+python3 aif_run/train_eval_multi.py BA           # 20 Seeds, Boeing
+aif_run/run_seeds20.sh                           # 20 Seeds für TM und BA
+python3 aif_run/analyze_seeds.py TM BA AIR       # Tabellen + Signifikanztests
+python3 aif_run/plot_margins.py                  # Abbildung Train- vs. Testmarge
 python3 aif_run/make_pdf.py UPDATE_2026_REPORT.md AIF_Update_2026.pdf
 ```
+
+Ein Lauf ist unterbrechbar: `train_eval_multi.py` überspringt Agenten, die bereits als `.zip`
+vorliegen, und schreibt `results_<ticker>_newdata.json` inkrementell fort.

@@ -70,6 +70,8 @@ import aif_environment as AE  # noqa: E402
 
 CSV = {
     "BA": f"{DATA}/BA_5Y_daily.csv",
+    "TM": f"{DATA}/TM_5Y_daily.csv",
+    "AIR": f"{DATA}/AIR_5Y_daily.csv",
 }
 
 COLS = ["Open", "High", "Low", "Close", "Volume"]
