@@ -1,9 +1,9 @@
 \section{Summary on One Selected Paper}
 
 \subsection{Deep Robust Reinforcement Learning for Practical Algorithmic Trading}
-\textit{Yang Li, Wanshan Zheng and Zibin Zheng (2016)}
+\textit{Yang Li, Wanshan Zheng and Zibin Zheng (2019)}
 
-In their 2016 paper, Yang Li, Wanshan Zheng and Zibin Zheng present a further development
+In their 2019 paper, Yang Li, Wanshan Zheng and Zibin Zheng present a further development
 of previously used RL algorithms such as A3C and DQN for application in stock trading, a
 so-called \emph{deep robust reinforcement learning} framework. To cope with the problem of
 uncontrollable external influences, called \emph{noise} in their study, the following steps
@@ -15,3 +15,66 @@ have to be performed first:
   \item Removal of the low volatility from the calculation in order to mitigate the effect
         caused by individual investors (as opposed to institutional investors).
 \end{itemize}
+
+In addition, to further reduce noise, the method of so-called SDAEs is utilized. The result
+of the last hidden layer is then fed into a LSTM layer in order allowing the agent to
+resolve the partial observability and discover latent patterns. For the model 5 stocks were
+chosen (3 NASDAQ, 1 S\&P 500 stock index mini future, 1 HS300 stock index future). The
+results applied on their test set show that both algorithms output significantly better
+results in terms of annualized returns than both the original A3C and DQN algorithms as well
+as simple buy and hold. Furthermore, their study shows that the SDAEs-LSTM A3C algorithm
+performs significantly better than the SDAEs-LSTM DQN algorithm across all stocks.
+
+\noindent\textit{Y. Li, W. Zheng and Z. Zheng, ``Deep Robust Reinforcement Learning for
+Practical Algorithmic Trading,'' in IEEE Access, vol.~7, pp.~108014--108022, 2019,
+doi: 10.1109/ACCESS.2019.2932789.}
+
+\subsection{Related Work: Three Answers to the Generalization Problem}
+\label{sec:related-work}
+
+The three papers read for this report attack the same difficulty -- the gap between
+in-sample fit and out-of-sample performance -- from three different sides, and all three
+support the central observation of the 2026 update.
+
+\paragraph{Representation.} Li, Zheng and Zheng (2019) change the input side of the agent:
+stacked denoising autoencoders (SDAEs) clean the noisy market data and an LSTM layer
+resolves the partial observability of the market state. On ten years of minute data their
+extended DQN and A3C variants beat the plain algorithms and buy-and-hold in annualized
+return. Their evaluation, however, still rests on a single 90/10 train--test split, so the
+reported edge is an in-sample statement in the sense of our own comparison.
+
+\paragraph{Environment.} Kuo et al.\ (2021) change the training environment instead of the
+network. A LOB-GAN learns the ordering behaviour of the limit order book; its generator,
+combined with a matching engine, forms an interactive ``Virtual Market'' in which the
+portfolio agent is trained. Training in this simulated market improves out-of-sample
+portfolio performance by about four percent over other generalization strategies. This is
+the mirror image of our own result: a static environment built from historical prices is
+itself part of the generalization problem.
+
+\paragraph{Policy.} Niu, Li and Li (2022) keep the environment and diversify the policy set.
+MetaTrader first imitates several expert strategies (momentum, mean reversion, hindsight) to
+obtain a set of diverse base policies, and then trains a DQN meta-policy that recognises the
+current market regime and switches to the most suitable base policy. On DJIA, HSI and CSI100
+it reports clearly better risk-adjusted returns than DeepTrader and the classical
+strategies.
+
+Our own re-run (Chapter~\ref{sec:update-a2c} and the 20-seed extension in the accompanying
+update report) sits between these three positions: the representation is unchanged (no
+SDAE), the environment is still built from historical prices, and the policy set is a single
+A2C agent. What was made robust instead is the evaluation itself -- every configuration was
+repeated with twenty seeds. The outcome is sober and matches the papers' implicit lesson:
+in-sample the agent wins clearly on all three stocks, but out-of-sample only Boeing keeps a
+significant edge over buy-and-hold, Airbus ends exactly on buy-and-hold and Toyota turns
+significantly worse. The in-sample margin does not predict the out-of-sample result. Read
+against the three papers, this suggests that robustness has to be built into the
+representation, the environment or the policy ensemble; a single-agent, single-environment
+setup like ours should not be expected to generalise on its own.
+
+\noindent\textit{C.-H. Kuo, C.-T. Chen, S.-J. Lin and S.-H. Huang, ``Improving Generalization
+in Reinforcement Learning-Based Trading by Using a Generative Adversarial Market Model,'' in
+IEEE Access, vol.~9, 2021, doi: 10.1109/ACCESS.2021.3068269.}
+
+\noindent\textit{H. Niu, S. Li and J. Li, ``MetaTrader: A Reinforcement Learning Approach
+Integrating Diverse Policies for Portfolio Optimization,'' in Proc.\ 31st ACM Int.\ Conf.\ on
+Information and Knowledge Management (CIKM '22), Atlanta, GA, USA, 2022,
+arXiv:2210.07771.}
