@@ -144,7 +144,9 @@ gegenüber der Baseline signifikant besser ($+0{,}200$, $p=0{,}030$) und die eig
 Testmarge ist klar von null verschieden ($p=0{,}0010$, zweiseitig $0{,}0019$). Das ist der
 \emph{erste} Arm in diesem Projekt, der die 5-\%-Schwelle im gepaarten Test gegen die
 Baseline reißt --- weder \texttt{nstep} allein ($p=0{,}107$) noch das Bündel
-($p=0{,}062$) schaffen das.
+($p=0{,}062$) schaffen das. Der Befund gilt allerdings nur für Boeing;
+Abschnitt~\ref{sec:a3c-replikation} wiederholt den Vergleich auf den beiden anderen Aktien
+und zeigt, dass sich der Vorteil \emph{nicht} überträgt.
 
 \begin{figure}[H]
   \centering
@@ -165,6 +167,72 @@ $+0{,}02$, also \emph{null} Vorsprung, und liefern gleichzeitig die besten Testw
 haben den historischen Pfad nie gesehen; dass sie im Trainingsfenster nicht gewinnen, ist
 deshalb keine Schwäche, sondern der Mechanismus. Ein In-Sample-Vorsprung von $+8$ ist
 damit als das entlarvt, was er ist: Memorieren.
+
+\subsection{Robustheitsprüfung: die beiden anderen Aktien}
+\label{sec:a3c-replikation}
+
+Die Zerlegung stammt von einer einzigen Aktie, also stellt sich die Frage, ob sie eine
+Eigenschaft der Methode oder von Boeing ist. Das komplette Protokoll --- gleiche Umgebung,
+Fenster, Episoden-Seeds und Auswertung, 20 Seeds --- wurde deshalb für \textbf{Airbus} und
+\textbf{Toyota} wiederholt, jeweils mit den drei Armen Baseline, \texttt{nstep} $10$ und
+\texttt{nstep} $10$ $+$ Bootstrap.
+
+\begin{table}[H]
+  \centering
+  \caption{Replikation auf allen drei Aktien, 20 Seeds. Testmarge $=$ Agent $-$ Buy-and-Hold
+           (NAV-Punkte); die beiden rechten Spalten sind die gepaarte Differenz gegen die
+           Baseline.}
+  \label{tab:a3c-replikation}
+  \small
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Aktie & Baseline & \texttt{nstep} 10 & \texttt{nstep} 10 $+$ Boot & $\Delta$ \texttt{nstep} 10 & $\Delta$ $+$ Boot\\
+    \midrule
+    Boeing & $+0{,}019$ & $+0{,}125$ & $+0{,}218$ & $+0{,}107$ ($p=0{,}11$)  & $+0{,}200$ ($p=0{,}030$)\\
+    Airbus & $-0{,}035$ & $+0{,}071$ & $-0{,}180$ & $+0{,}105$ ($p=0{,}11$)  & $-0{,}145$ ($p=0{,}012$)\\
+    Toyota & $-0{,}184$ & $-0{,}188$ & $-0{,}009$ & $-0{,}004$ ($p=0{,}94$)  & $+0{,}175$ ($p=0{,}008$)\\
+    \midrule
+    AIR$+$TM gepoolt & --- & --- & --- & $+0{,}051$ ($p=0{,}24$) & $+0{,}015$ ($p=0{,}75$)\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Tabelle~\ref{tab:a3c-replikation} und Abbildung~\ref{fig:a3c-replikation} geben die
+ernüchternde Antwort: Der \emph{Mechanismus} repliziert, der \emph{Nutzen} nicht.
+
+\paragraph{Der Mechanismus ist reproduzierbar.} Auf jeder Aktie ist die In-Sample-Marge der
+beiden bootstrap-freien Arme groß ($+2{,}8$/$+2{,}0$ bei Airbus, $+5{,}0$/$+3{,}9$ bei
+Toyota), während die Bootstrap-Arme bei $\approx 0$ liegen ($-0{,}26$ Airbus, $-0{,}40$
+Toyota). Der Bootstrap entfernt das Memorieren überall, genau wie bei Boeing.
+
+\paragraph{Der Out-of-Sample-Nutzen ist es nicht.} Die gepaarte Differenz \texttt{nstep}
+$10$ $+$ Bootstrap $-$ Baseline beträgt $+0{,}200$ bei Boeing ($p=0{,}030$) und $+0{,}175$
+bei Toyota ($p=0{,}008$) --- aber $\mathbf{-0{,}145}$ bei Airbus ($p=0{,}012$): dort macht
+der Bootstrap den Agenten signifikant \emph{schlechter}. Gepoolt über Airbus und Toyota
+ist der Effekt $+0{,}015$ ($p=0{,}75$, $n=40$), also null. Der Einzelfaktor \texttt{nstep}
+$10$ ist genauso instabil: $+0{,}107$ (Boeing) und $+0{,}105$ (Airbus) sind fast identisch,
+Toyota ist exakt null ($-0{,}004$, $p=0{,}94$), und der gepoolte Wert ($+0{,}051$,
+$p=0{,}24$) ist nicht signifikant.
+
+\paragraph{Konsequenz.} Der ``erste signifikante Vorsprung'' aus dem vorigen
+Unterabschnitt ist ein \textbf{Einzelaktien-Befund} und darf nicht als allgemeine
+Eigenschaft der Methode gelesen werden. Bei drei Aktien ist eine signifikante Verbesserung
+und eine signifikante Verschlechterung genau das Muster, das man aus Rauschen plus einem
+aktienspezifischen Effekt erwartet; der gepoolte Test --- die ehrliche Zusammenfassung ---
+findet nichts. Die belastbare Aussage ist damit enger und für ein Kursprojekt lehrreicher:
+\emph{Der Mechanismus ist reproduzierbar, der Nutzen nicht.} Das passt zur Lehre der drei
+ausgewählten Paper: Generalisierung muss man einbauen, und ein einzelner Hebel, der auf
+einer Kursreihe hilft, überträgt sich nicht ohne Weiteres auf eine andere.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{update_2026_a3c_replication.png}
+  \caption{Out-of-Sample-Marge der beiden Hebel gegenüber der Baseline, je Aktie und
+  gepoolt (Airbus$+$Toyota, $n=40$). Fehlerbalken: 95-\%-KI der gepaarten Differenz; $*$
+  markiert $p<0{,}05$. Boeing und Toyota profitieren vom Bootstrap, Airbus verschlechtert
+  sich; gepoolt verschwindet der Effekt.}
+  \label{fig:a3c-replikation}
+\end{figure}
 
 \subsection{Einschränkungen}
 
@@ -196,7 +264,9 @@ Vorsprung vor Buy-and-Hold. Die Zerlegung zeigt, dass der Effekt der naheliegend
 ``Regularisierung'' in Wahrheit aus der \textbf{Kredit-Zuweisung} stammt
 (\texttt{nstep} $5\to10$); Entropie-Bonus und Beobachtungsrauschen sind in dieser
 Größenordnung wirkungslos. Der \textbf{Block-Bootstrap} liefert als zweiter Hebel den
-besten Testwert und den ersten signifikanten Vorsprung gegenüber der Baseline ---
-allerdings erst in der Kombination. Konzeptionell ist das der interessantere Befund: Der
+besten Testwert und --- auf Boeing --- den ersten signifikanten Vorsprung gegenüber der
+Baseline, allerdings erst in der Kombination. Die Robustheitsprüfung auf den beiden anderen
+Aktien (Abschnitt~\ref{sec:a3c-replikation}) schränkt das ein: Der Mechanismus ist
+reproduzierbar, der Out-of-Sample-Nutzen nicht. Konzeptionell ist das der interessantere Befund: Der
 Agent braucht den realen historischen Pfad nicht, um auf dem Testfenster gleichauf oder
 besser zu sein; viele plausible Pfade genügen.
