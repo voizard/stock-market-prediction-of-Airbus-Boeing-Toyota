@@ -139,7 +139,9 @@ bootstrap replicates are deterministic.)
 significantly better than the baseline ($+0.200$, $p=0.030$) and its own test margin is
 clearly different from zero ($p=0.0010$, two-sided $0.0019$). This is the \emph{first} arm
 in this project to break the 5\,\% threshold in the paired test against the baseline ---
-neither \texttt{nstep} alone ($p=0.107$) nor the bundle ($p=0.062$) manages that.
+neither \texttt{nstep} alone ($p=0.107$) nor the bundle ($p=0.062$) manages that. The
+result is a single-stock one, however: Section~\ref{sec:update-a3c-replication} repeats the
+comparison on the other two stocks and shows that the advantage does \emph{not} transfer.
 
 \begin{figure}[H]
   \centering
@@ -159,6 +161,72 @@ $+0.02$, i.e.\ \emph{zero} edge, and at the same time deliver the best test valu
 never saw the historical path; that they do not win in the training window is therefore not
 a weakness but the mechanism. An in-sample edge of $+8$ is thus exposed as what it is:
 memorisation.
+
+\subsection{Robustness Check: the Other Two Stocks}
+\label{sec:update-a3c-replication}
+
+The decomposition above was derived on a single stock, so the natural question is whether it
+is a property of the method or of Boeing. The whole protocol --- same environment, windows,
+episode seeds and evaluation, 20 seeds --- was therefore repeated for \textbf{Airbus} and
+\textbf{Toyota}, each with the three arms baseline, \texttt{nstep} $10$ and \texttt{nstep}
+$10$ $+$ bootstrap.
+
+\begin{table}[H]
+  \centering
+  \caption{Replication on all three stocks, 20 seeds. Test margin $=$ agent $-$ buy-and-hold
+           (NAV points); the two right-hand columns are the paired difference against the
+           baseline.}
+  \label{tab:update-a3c-replication}
+  \small
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Stock & baseline & \texttt{nstep} 10 & \texttt{nstep} 10 $+$ boot & $\Delta$ \texttt{nstep} 10 & $\Delta$ $+$ boot\\
+    \midrule
+    Boeing & $+0.019$ & $+0.125$ & $+0.218$ & $+0.107$ ($p=0.11$)  & $+0.200$ ($p=0.030$)\\
+    Airbus & $-0.035$ & $+0.071$ & $-0.180$ & $+0.105$ ($p=0.11$)  & $-0.145$ ($p=0.012$)\\
+    Toyota & $-0.184$ & $-0.188$ & $-0.009$ & $-0.004$ ($p=0.94$)  & $+0.175$ ($p=0.008$)\\
+    \midrule
+    pooled AIR$+$TM & --- & --- & --- & $+0.051$ ($p=0.24$) & $+0.015$ ($p=0.75$)\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Table~\ref{tab:update-a3c-replication} and Figure~\ref{fig:update-a3c-replication} give the
+sober answer: the \emph{mechanism} replicates, the \emph{benefit} does not.
+
+\paragraph{The mechanism is reproducible.} On every stock the in-sample margin of the two
+bootstrap-free arms is large ($+2.8$/$+2.0$ on Airbus, $+5.0$/$+3.9$ on Toyota) while the
+bootstrap arms sit at $\approx 0$ ($-0.26$ Airbus, $-0.40$ Toyota). The bootstrap removes
+memorisation everywhere, exactly as on Boeing.
+
+\paragraph{The out-of-sample benefit is not.} The paired difference \texttt{nstep} $10$ $+$
+bootstrap $-$ baseline is $+0.200$ on Boeing ($p=0.030$) and $+0.175$ on Toyota
+($p=0.008$) --- but $\mathbf{-0.145}$ on Airbus ($p=0.012$): there the bootstrap makes the
+agent significantly \emph{worse}. Pooled over Airbus and Toyota the effect is $+0.015$
+($p=0.75$, $n=40$) --- i.e.\ no effect. The single-factor lever \texttt{nstep} $10$ is
+equally unstable: $+0.107$ (Boeing) and $+0.105$ (Airbus) are almost identical, Toyota is
+exactly zero ($-0.004$, $p=0.94$), and the pooled value ($+0.051$, $p=0.24$) is not
+significant.
+
+\paragraph{Consequence.} The ``first significant edge'' of the previous subsection is a
+\textbf{single-stock result} and must not be read as a general property of the method. With
+three stocks, one significant improvement and one significant deterioration is exactly the
+pattern expected from noise plus a stock-specific effect; the pooled test --- the honest
+summary --- finds nothing. The defensible statement is therefore narrower and, for a course
+project, more instructive: \emph{the mechanism is reproducible, the payoff is not.} This
+also matches the lesson of the three selected papers (Chapter~\ref{sec:related-work}):
+generalisation has to be built in, and a single lever that helps on one price series should
+not be expected to transfer to another.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{update_2026_a3c_replication.png}
+  \caption{Out-of-sample margin of the two levers against the baseline, per stock and pooled
+  (Airbus$+$Toyota, $n=40$). Error bars: 95\,\% CI of the paired difference; $*$ marks
+  $p<0.05$. Boeing and Toyota improve with the bootstrap, Airbus deteriorates; pooled the
+  effect vanishes.}
+  \label{fig:update-a3c-replication}
+\end{figure}
 
 \subsection{Limitations}
 
@@ -188,7 +256,9 @@ The baseline confirms the A2C finding on a second algorithm: no demonstrable edg
 buy-and-hold. The decomposition shows that the effect of the obvious ``regularisation''
 actually comes from the \textbf{credit assignment} (\texttt{nstep} $5\to10$); entropy bonus
 and observation noise are ineffective at this magnitude. The \textbf{block bootstrap}
-delivers, as a second lever, the best test value and the first significant edge over the
-baseline --- but only in combination. Conceptually this is the more interesting finding: the
+delivers, as a second lever, the best test value and --- on Boeing --- the first significant
+edge over the baseline, but only in combination. The robustness check on the other two
+stocks (Section~\ref{sec:update-a3c-replication}) shows that this edge does not transfer:
+the mechanism is reproducible, the payoff is not. Conceptually this is the more interesting finding: the
 agent does not need the real historical path to be level with or better than buy-and-hold on
 the test window; many plausible paths are enough.
