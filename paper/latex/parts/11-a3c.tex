@@ -1,0 +1,194 @@
+\section{A3C: A Second Algorithm, a Decomposition and a Generative Market Model}
+\label{sec:update-a3c}
+
+\paragraph{Where the question comes from.} The original notebook and the re-run
+(Section~\ref{sec:update-a2c}) use \emph{A2C}, i.e.\ synchronous learning. The obvious
+cross-check is \emph{A3C}: several workers collect rollouts in parallel and push their
+gradients into a shared network (Hogwild style, only the optimiser step is locked).
+Environment, windows, episode seeds and evaluation functions are left unchanged, so the
+comparison measures the learning algorithm and not the surrounding machinery. The final
+evaluation again runs over \textbf{20 seeds (100--119)}. One peculiarity up front: A3C was
+built only \emph{after} the A2C part was finished, so there is no notebook template against
+which the numbers could be mirrored.
+
+\subsection{The Baseline Has No Edge}
+
+\begin{table}[H]
+  \centering
+  \caption{A3C on Boeing, 20 seeds. Margin $=$ agent $-$ buy-and-hold in NAV points
+           (start $=1.0$); $p$ one-sided from the $t$-test ``margin $>0$''.
+           ``R/R'' is the return/risk ratio in the test window.}
+  \label{tab:update-a3c-arms}
+  \small
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    Arm & Training & Test & 95\,\% CI test & Hit rate test & $p$ & R/R test\\
+    \midrule
+    Baseline                 & $+8.43$ & $+0.019$ & $[-0.06;+0.10]$ & 51.0\,\% & $0.32$  & $-0.24$\\
+    \texttt{ent\_coef} 0.02  & $+8.37$ & $+0.047$ & $[-0.03;+0.12]$ & 64.0\,\% & $0.10$  & $-0.37$\\
+    \texttt{obs\_noise} 0.01 & $+8.79$ & $+0.038$ & $[-0.03;+0.11]$ & 57.2\,\% & $0.14$  & $-0.45$\\
+    \texttt{nstep} 10        & $+6.71$ & $+0.125$ & $[+0.01;+0.24]$ & 67.8\,\% & $0.019$ & $-0.05$\\
+    Bundle (all three)       & $+7.69$ & $+0.145$ & $[+0.03;+0.26]$ & 70.2\,\% & $0.007$ & $-0.03$\\
+    Bundle $+$ bootstrap     & $+0.02$ & $+0.218$ & $[+0.09;+0.35]$ & 77.8\,\% & $0.0012$& $+0.50$\\
+    \texttt{nstep} 10 $+$ bootstrap & $+0.02$ & $+0.218$ & $[+0.09;+0.35]$ & 72.5\,\% & $0.0010$& $+0.38$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The baseline repeats the A2C result: in the test window the margin is $+0.019$ NAV points,
+the agent wins in \textbf{51.0\,\%} of the episodes --- a coin flip --- and the one-sided
+$p$-value is $0.32$. \textbf{An unmodified A3C agent has no demonstrable edge over
+buy-and-hold.} In the training window, at the same time, the margin is $+8.43$: the agent
+has memorised the one historical path.
+
+\subsection{Decomposition: Which Factor Carries the Effect?}
+
+The obvious move is a bundle of three changes: \texttt{nstep} $5\to10$ (n-step returns),
+\texttt{ent\_coef} $0.01\to0.02$ (entropy bonus) and \texttt{obs\_noise} $0\to0.01$
+(Gaussian noise on the observation during training). The bundle lifts the test margin to
+$+0.145$ ($p=0.007$). The only question is: \emph{which} of the three factors does that?
+
+Each factor was therefore run on its own, again with 20 seeds (rows 2--4 of
+Table~\ref{tab:update-a3c-arms}). The result is unambiguous and was surprising to me:
+
+\paragraph{\texttt{nstep} is the active ingredient.} On its own, \texttt{nstep} $10$
+already reaches $+0.125$ ($p=0.019$, hit rate 67.8\,\%) --- that is \textbf{85\,\%} of the
+bundle's effect. The paired test bundle against \texttt{nstep} alone gives $+0.020$ at
+$p=0.81$: statistically \textbf{indistinguishable}. The bundle is therefore not a sum of
+levers but essentially \texttt{nstep} plus noise.
+
+\paragraph{\texttt{ent\_coef} and \texttt{obs\_noise} are inert.} On their own they yield
+$+0.047$ ($p=0.64$) and $+0.038$ ($p=0.72$) against the baseline, with 10 and 9 of 20
+positive seed differences respectively --- a coin flip. They do not act on the overfitting
+either: the in-sample margin stays at $+8.37$ and $+8.79$ against $+8.43$ for the baseline
+($p=0.90$ and $0.53$). Only \texttt{nstep} $10$ lowers it significantly to $+6.71$
+($p=0.0015$) --- and at the same time raises the test value.
+
+\paragraph{Additivity.} The sum of the three single deltas is $+0.155$, the bundle sits at
+$+0.126$; the residual is $-0.029$ against a spread of $0.61$ ($p=0.84$). The point
+estimate is thus slightly sub-additive ($0.82\times$), but statistically indistinguishable
+from pure additivity --- the noise dominates. There is no synergy in any case.
+
+\subsection{A Generative Market Model Instead of Rolling Windows}
+
+The second idea comes from the paper selection (Kuo et al., LOB-GAN, see
+Chapter~\ref{sec:related-work}): does the agent generalise better if it sees \emph{several
+plausible market paths} instead of a single historical one? The obvious route would be
+rolling training windows --- and that is \textbf{not buildable} in this protocol. The
+environment forces more than $2 \cdot 252 = 504$ observations per environment
+(\texttt{assert len(df) > 2*trading\_days}), and \texttt{trading\_days} simultaneously sets
+the episode length of 252 steps; the minimum therefore cannot be lowered without breaking
+the protocol. The training window, however, has only \textbf{634} usable rows, and the price
+series starts exactly at the window's beginning. Two genuine sub-windows would each need
+around 550 rows --- impossible. The code now checks this itself and aborts with a clear
+message.
+
+Instead, a \textbf{block bootstrap} generates synthetic price series. What matters is
+\emph{what} is resampled: price levels would be wrong, because every block seam would create
+an artificial jump (a block ends at 100, the next starts at 80 --- minus 20\,\% overnight).
+The \emph{daily shape} is therefore bootstrapped:
+$\log(\text{Close}_t/\text{Close}_{t-1})$, $\log(\text{Open}_t/\text{Close}_{t-1})$,
+$\log(\text{High}_t/\text{Close}_t)$, $\log(\text{Low}_t/\text{Close}_t)$ and
+$\log(\text{Volume}_t)$. Blocks of 20 consecutive days are drawn with replacement and the
+path is rebuilt from the first real close. Within the blocks the autocorrelation is
+preserved, the curve is continuous by construction, and the agent never sees the \emph{real}
+training path. Cross-check: the spread of the daily returns is $0.0229$ and $0.0247$ in the
+synthetic series against $0.0239$ in the real series.
+
+\subsection{Isolation: the Bootstrap Carries, the Two Passengers Do Not}
+
+In the ``bundle $+$ bootstrap'' row the bootstrap still sits together with the two inert
+factors. The isolating run \texttt{nstep} $10$ $+$ bootstrap without \texttt{ent\_coef} and
+\texttt{obs\_noise} closes that gap (last row):
+
+\begin{table}[H]
+  \centering
+  \caption{Paired tests over the 20 seed differences (df$=19$), test margin.}
+  \label{tab:update-a3c-paired}
+  \small
+  \begin{tabular}{lrrr}
+    \toprule
+    Comparison & $\Delta$ test margin & $t$ & $p$\\
+    \midrule
+    \texttt{nstep} 10 $-$ baseline            & $+0.107$ & $1.69$ & $0.107$\\
+    \texttt{ent\_coef} 0.02 $-$ baseline      & $+0.028$ & $0.47$ & $0.643$\\
+    \texttt{obs\_noise} 0.01 $-$ baseline     & $+0.020$ & $0.36$ & $0.720$\\
+    bundle $-$ baseline                       & $+0.126$ & $1.98$ & $0.062$\\
+    bundle $-$ \texttt{nstep} 10              & $+0.020$ & $0.24$ & $0.810$\\
+    \texttt{nstep} 10 $+$ bootstrap $-$ baseline & $+0.200$ & $2.35$ & $\mathbf{0.030}$\\
+    \texttt{nstep} 10 $+$ bootstrap $-$ \texttt{nstep} 10 & $+0.093$ & $1.16$ & $0.260$\\
+    \texttt{nstep} 10 $+$ bootstrap $-$ bundle $+$ bootstrap & $+0.0002$ & $0.003$ & $0.998$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{The bootstrap effect survives in isolation --- and was never carried by the
+passengers.} The isolated increment is $+0.093$ and thus \emph{exactly} the same value as
+the contaminated estimate ($+0.093$); the ratio is $1.00$. The effect has therefore neither
+shrunk nor disappeared. One caveat: on its own it is \textbf{not significant} ($p=0.26$,
+12 of 20 seeds positive, median $+0.138$, trimmed mean $+0.112$) --- the point estimate is
+stable, the sample is too small.
+
+\paragraph{\texttt{nstep} 10 $+$ bootstrap is indistinguishable from ``bundle $+$
+bootstrap''} ($+0.0002$, $p=0.998$). \texttt{ent\_coef} and \texttt{obs\_noise} are thus
+\textbf{finally proven to be passengers}: the two runs differ only in those two parameters
+and produce practically the same distribution. (Incidentally a consistency check that the
+bootstrap replicates are deterministic.)
+
+\paragraph{A significant edge for the first time.} \texttt{nstep} $10$ $+$ bootstrap is
+significantly better than the baseline ($+0.200$, $p=0.030$) and its own test margin is
+clearly different from zero ($p=0.0010$, two-sided $0.0019$). This is the \emph{first} arm
+in this project to break the 5\,\% threshold in the paired test against the baseline ---
+neither \texttt{nstep} alone ($p=0.107$) nor the bundle ($p=0.062$) manages that.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{update_2026_a3c.png}
+  \caption{One-factor decomposition and block bootstrap, 20 seeds. Left the test margin
+  (error bars: 95\,\% CI), right the margin in the training window. The two bootstrap arms
+  (dark) have practically zero in-sample edge and the largest out-of-sample one.}
+  \label{fig:update-a3c}
+\end{figure}
+
+\subsection{What the Overfitting Picture Shows}
+
+Figure~\ref{fig:update-a3c} makes the core visible. The four arms that train on the real
+window carry an in-sample margin of between $+6.7$ and $+8.8$ NAV points --- and almost
+none of it survives out-of-sample. The two bootstrap arms have an in-sample margin of
+$+0.02$, i.e.\ \emph{zero} edge, and at the same time deliver the best test values. They
+never saw the historical path; that they do not win in the training window is therefore not
+a weakness but the mechanism. An in-sample edge of $+8$ is thus exposed as what it is:
+memorisation.
+
+\subsection{Limitations}
+
+\paragraph{20 seeds are a small sample.} The confidence intervals in
+Table~\ref{tab:update-a3c-arms} are wide, and the central bootstrap increment is
+underpowered at $p=0.26$. What is robust: that the baseline has no edge, that
+\texttt{nstep} $10$ explains the bundle, that the two remaining factors do nothing, and
+that \texttt{nstep} $10$ $+$ bootstrap beats the baseline significantly. What is not robust
+is the claim that the bootstrap addition is significant \emph{by itself}.
+
+\paragraph{Only five different synthetic paths.} With 20 agents and five bootstrap
+replicates, groups of four seeds share the same synthetic series. The seeds then vary only
+the exploration, not the environment. A run with one path per agent would be the next clean
+step.
+
+\paragraph{The in-sample margin of the bootstrap arms is not comparable.} It is measured on
+the real window, on which these agents never trained; the row is therefore readable only as
+an overfitting indicator, not as a performance measure.
+
+\paragraph{Data and environment.} The limitations from Section~\ref{sec:update-deviations}
+apply: observation vector 334 instead of 205, local CSVs instead of \texttt{yfinance}. A3C
+uses the same environment as A2C, so the deviations affect both arms equally.
+
+\subsection{Conclusion of the A3C Part}
+
+The baseline confirms the A2C finding on a second algorithm: no demonstrable edge over
+buy-and-hold. The decomposition shows that the effect of the obvious ``regularisation''
+actually comes from the \textbf{credit assignment} (\texttt{nstep} $5\to10$); entropy bonus
+and observation noise are ineffective at this magnitude. The \textbf{block bootstrap}
+delivers, as a second lever, the best test value and the first significant edge over the
+baseline --- but only in combination. Conceptually this is the more interesting finding: the
+agent does not need the real historical path to be level with or better than buy-and-hold on
+the test window; many plausible paths are enough.
