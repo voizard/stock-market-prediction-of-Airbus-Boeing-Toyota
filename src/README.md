@@ -8,6 +8,8 @@
 | `plot_results.py` | prints the results table and writes `figures/update_2026_a2c.png` |
 | `train_eval_a3c.py` | A3C counterpart to `train_eval_multi.py`: asynchronous workers on the shared network, n-step returns, entropy bonus, observation noise and the block bootstrap; writes `results/results_<tk>_a3c[_tag].json` |
 | `plot_a3c_ablation.py` | one-factor decomposition and block bootstrap figure, reads `results/results_ba_a3c*.json`, writes `figures/update_2026_a3c.png` |
+| `compare_a3c_repl.py` | replication analysis across stocks: per-arm test/train margins, hit rate, one-sided p, and the paired tests per stock plus pooled AIR+TM |
+| `plot_a3c_replication.py` | replication figure: out-of-sample margin of the two levers against the baseline, per stock + pooled, reads `results/results_{ba,air,tm}_a3c*.json` |
 | `make_pdf.py` | renders a Markdown memo to PDF (WeasyPrint) |
 | `data_update/` | the throwaway scripts that fetched the 2026 market data (Boeing/Toyota history, Airbus from ariva.de, P/E + P/S) |
 

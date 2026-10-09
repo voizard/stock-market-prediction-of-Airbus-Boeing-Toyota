@@ -37,6 +37,13 @@ tests whether the agent's actions carry any predictive value.
   observation noise are inert. A **block bootstrap** of the *daily returns* (many
   synthetic paths instead of the one real path) adds ≈ +0.09 and, combined with `nstep` 10,
   gives the **first arm that beats the baseline significantly** (+0.200, *p* = 0.030).
+- **A replication on the other two stocks tempers that: the mechanism is reproducible, the
+  payoff is not.** Repeating the whole protocol on **Airbus** and **Toyota** (20 seeds each)
+  gives `nstep 10 + bootstrap − baseline` = **+0.175 on Toyota** (*p* = 0.008) but
+  **−0.145 on Airbus** (*p* = 0.012), and **+0.015 pooled** (*p* = 0.75, *n* = 40). The
+  bootstrap removes memorisation on every stock (in-sample margin ≈ 0 vs. +2…+5), but its
+  out-of-sample benefit is stock-specific. The “first significant edge” is therefore a
+  single-stock result, not a general property of the method.
 
 ## Results — 2026 re-run, 20 seeds per stock
 
@@ -138,6 +145,8 @@ The price CSV is **not** redistributed here — it belongs to the data provider.
 │   ├── plot_margins.py    in-sample vs. out-of-sample margin figure
 │   ├── train_eval_a3c.py  A3C counterpart: async workers, n-step returns, block bootstrap
 │   ├── plot_a3c_ablation.py  one-factor decomposition + bootstrap figure
+│   ├── compare_a3c_repl.py   replication: paired tests per stock + pooled (AIR+TM)
+│   ├── plot_a3c_replication.py  replication figure across the three stocks
 │   └── data_update/       scripts that fetched the 2026 market data
 ├── paper/                 LaTeX sources and PDFs of both reports
 │   ├── latex/             main report: main.tex, parts/, figures, code listing
@@ -166,6 +175,8 @@ python3 src/train_eval_a3c.py BA                    # baseline
 A3C_NSTEP=10 python3 src/train_eval_a3c.py BA       # + credit assignment
 A3C_NSTEP=10 A3C_BOOT=5 A3C_BOOT_BLOCK=20 python3 src/train_eval_a3c.py BA   # + bootstrap
 python3 src/plot_a3c_ablation.py                    # decomposition figure
+python3 src/compare_a3c_repl.py AIR TM              # replication: paired tests per stock + pooled
+python3 src/plot_a3c_replication.py                 # replication figure (3 stocks)
 
 # reports (LaTeX via Tectonic)
 cd paper/latex && tectonic -X compile main.tex --outdir out              # main report

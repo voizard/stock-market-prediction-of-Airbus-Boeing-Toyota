@@ -15,12 +15,14 @@
     \texttt{figs/update\_2026\_a2c.png}  & End-NAV je Episode, Training vs.\ Test (Boeing, 5 Seeds)\\
     \texttt{figs/update\_2026\_margins.png} & In-Sample- vs.\ Out-of-Sample-Marge je Aktie (20 Seeds)\\
     \texttt{figs/update\_2026\_a3c.png} & A3C: Ein-Faktor-Zerlegung und Block-Bootstrap (Boeing, 20 Seeds)\\
+    \texttt{figs/update\_2026\_a3c\_replication.png} & A3C-Replikation: Out-of-Sample-Vorteil vs.\ Baseline, je Aktie + gepoolt\\
     \texttt{figs/update\_2026\_1y.png}   & Kursentwicklung der drei Aktien, letzte zwölf Monate\\
     \texttt{updated\_metrics\_final.json} & aktualisierte Fundamentalkennzahlen\\
     \texttt{results\_ba\_newdata.json}   & Roh-Ergebnisse Boeing (20 Seeds, Training + Test)\\
     \texttt{results\_air\_newdata.json}  & Roh-Ergebnisse Airbus (20 Seeds, Training + Test)\\
     \texttt{results\_tm\_newdata.json}   & Roh-Ergebnisse Toyota (20 Seeds, Training + Test)\\
     \texttt{results\_ba\_a3c*.json}   & A3C-Roh-Ergebnisse Boeing: Baseline, Ein-Faktor-Arme (\texttt{nstep10}, \texttt{ent02}, \texttt{noise01}), B\"undel, Bootstrap (20 Seeds)\\
+    \texttt{results\_\{air,tm\}\_a3c*.json} & A3C-Roh-Ergebnisse Airbus/Toyota: Baseline, \texttt{nstep10}, \texttt{nstep10boot} (20 Seeds)\\
     \texttt{agent\_\{ba,air,tm\}\_1..20.zip} & die 60 neu trainierten A2C-Modelle\\
     \texttt{env\_runner.py}              & Environment-Aufsatz (lokale Daten, Seriell-Patch)\\
     \texttt{train\_eval\_multi.py}       & Training und Auswertung für beliebige Ticker, mit Resume\\
@@ -28,6 +30,8 @@
     \texttt{plot\_margins.py}            & Abbildung Train- vs.\ Testmarge je Aktie\\
     \texttt{train\_eval\_a3c.py}         & A3C-Training und -Auswertung (asynchron, n-Schritt-Returns, Block-Bootstrap)\\
     \texttt{plot\_a3c\_ablation.py}      & Abbildung A3C-Ein-Faktor-Zerlegung und Bootstrap\\
+    \texttt{compare\_a3c\_repl.py}       & Replikations-Auswertung: gepaarte Tests je Aktie und gepoolt (AIR+TM)\\
+    \texttt{plot\_a3c\_replication.py}   & Abbildung A3C-Replikation über die drei Aktien\\
     \texttt{train\_eval.py}              & Training und Auswertung (Notebook-Protokoll, 5 Agenten)\\
     \texttt{\{BA,AIR,TM\}\_5Y\_daily.csv} & Tagesdaten der drei Aktien (fünf Jahre)\\
     \bottomrule
@@ -45,6 +49,8 @@ python3 aif_run/analyze_seeds.py TM BA AIR     # Tabellen + Signifikanztests
 python3 aif_run/plot_margins.py                # Abbildung Train- vs. Testmarge
 python3 aif_run/train_eval_a3c.py BA           # A3C auf Boeing, 20 Seeds (~2 h)
 python3 aif_run/plot_a3c_ablation.py           # Abbildung A3C-Zerlegung + Bootstrap
+python3 aif_run/compare_a3c_repl.py AIR TM     # Replikation: gepaarte Tests je Aktie + gepoolt
+python3 aif_run/plot_a3c_replication.py        # Abbildung A3C-Replikation (3 Aktien)
 cd paper/latex-update2026 && tectonic -X compile main.tex --outdir out   # Report-PDF
 \end{verbatim}
 }
