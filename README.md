@@ -29,6 +29,14 @@ tests whether the agent's actions carry any predictive value.
 - **Log returns stay negative for all three stocks** in the last 12 months
   (BA −15.6 %, AIR −9.5 %, TM −7.4 %), but **positive since August 2022**
   (BA +20 %, TM +40 %, AIR +50–65 %) — the loss picture was window-specific.
+- **A second algorithm (A3C) confirms the result, and a decomposition shows where the
+  effect really comes from.** Asynchronous A3C on Boeing, 20 seeds, has **no edge** over
+  buy-and-hold either (margin +0.019, hit rate 51 %, *p* = 0.32). Splitting the usual
+  three-factor “tuning” bundle shows the effect comes from the **credit assignment**
+  (`nstep` 5→10, 85 % of the bundle), not from regularisation — the entropy bonus and
+  observation noise are inert. A **block bootstrap** of the *daily returns* (many
+  synthetic paths instead of the one real path) adds ≈ +0.09 and, combined with `nstep` 10,
+  gives the **first arm that beats the baseline significantly** (+0.200, *p* = 0.030).
 
 ## Results — 2026 re-run, 20 seeds per stock
 
@@ -128,6 +136,8 @@ The price CSV is **not** redistributed here — it belongs to the data provider.
 │   ├── train_eval_multi.py  extended run, any ticker, resumable
 │   ├── analyze_seeds.py   mean, spread, 95 % CI, paired t-test
 │   ├── plot_margins.py    in-sample vs. out-of-sample margin figure
+│   ├── train_eval_a3c.py  A3C counterpart: async workers, n-step returns, block bootstrap
+│   ├── plot_a3c_ablation.py  one-factor decomposition + bootstrap figure
 │   └── data_update/       scripts that fetched the 2026 market data
 ├── paper/                 LaTeX sources and PDFs of both reports
 │   ├── latex/             main report: main.tex, parts/, figures, code listing
@@ -150,6 +160,12 @@ python3 src/plot_results.py            # prints the 5-agent table and writes the
 python3 src/train_eval_multi.py BA
 python3 src/analyze_seeds.py TM BA AIR # tables + significance tests
 python3 src/plot_margins.py            # margin figure
+
+# A3C ablation on Boeing (20 seeds, ~2 h per arm)
+python3 src/train_eval_a3c.py BA                    # baseline
+A3C_NSTEP=10 python3 src/train_eval_a3c.py BA       # + credit assignment
+A3C_NSTEP=10 A3C_BOOT=5 A3C_BOOT_BLOCK=20 python3 src/train_eval_a3c.py BA   # + bootstrap
+python3 src/plot_a3c_ablation.py                    # decomposition figure
 
 # reports (LaTeX via Tectonic)
 cd paper/latex && tectonic -X compile main.tex --outdir out              # main report
