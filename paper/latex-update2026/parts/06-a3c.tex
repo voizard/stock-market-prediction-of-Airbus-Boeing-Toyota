@@ -1,0 +1,202 @@
+\section{A3C: ein zweiter Algorithmus, eine Zerlegung und ein generatives Marktmodell}
+\label{sec:a3c}
+
+\paragraph{Woher die Frage kommt.} Original-Notebook und Nachbau (Abschnitt~\ref{sec:a2c})
+nutzen \emph{A2C}, also synchrones Lernen. Die naheliegende Gegenprobe ist \emph{A3C}:
+mehrere Worker sammeln parallel Rollouts und schieben ihre Gradienten in ein gemeinsames
+Netz (Hogwild-Stil, nur der Optimizer-Schritt ist gesperrt). Umgebung, Fenster,
+Episoden-Seeds und Auswertungsfunktionen bleiben unverändert --- damit misst der Vergleich
+den Lernalgorithmus und nicht das Drumherum. Die Endauswertung läuft wieder über
+\textbf{20 Seeds (100--119)}. Eine Besonderheit vorweg: A3C wurde erst
+\emph{nach} der Fertigstellung des A2C-Teils gebaut, es gibt also keine
+Notebook-Vorlage, gegen die man die Zahlen spiegeln könnte.
+
+\subsection{Die Baseline hat keinen Vorsprung}
+
+\begin{table}[H]
+  \centering
+  \caption{A3C auf Boeing, 20 Seeds. Marge $=$ Agent $-$ Buy-and-Hold in NAV-Punkten
+           (Start $=1{,}0$); $p$ einseitig aus dem $t$-Test ``Marge $>0$''.
+           ``R/R'' ist das Rendite/Risiko-Verhältnis im Testfenster.}
+  \label{tab:a3c-arms}
+  \small
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    Arm & Training & Test & 95-\%-KI Test & Treffer Test & $p$ & R/R Test\\
+    \midrule
+    Baseline                 & $+8{,}43$ & $+0{,}019$ & $[-0{,}06;+0{,}10]$ & 51,0\,\% & $0{,}32$  & $-0{,}24$\\
+    \texttt{ent\_coef} 0,02  & $+8{,}37$ & $+0{,}047$ & $[-0{,}03;+0{,}12]$ & 64,0\,\% & $0{,}10$  & $-0{,}37$\\
+    \texttt{obs\_noise} 0,01 & $+8{,}79$ & $+0{,}038$ & $[-0{,}03;+0{,}11]$ & 57,2\,\% & $0{,}14$  & $-0{,}45$\\
+    \texttt{nstep} 10        & $+6{,}71$ & $+0{,}125$ & $[+0{,}01;+0{,}24]$ & 67,8\,\% & $0{,}019$ & $-0{,}05$\\
+    Bündel (alle drei)       & $+7{,}69$ & $+0{,}145$ & $[+0{,}03;+0{,}26]$ & 70,2\,\% & $0{,}007$ & $-0{,}03$\\
+    Bündel $+$ Bootstrap     & $+0{,}02$ & $+0{,}218$ & $[+0{,}09;+0{,}35]$ & 77,8\,\% & $0{,}0012$& $+0{,}50$\\
+    \texttt{nstep} 10 $+$ Bootstrap & $+0{,}02$ & $+0{,}218$ & $[+0{,}09;+0{,}35]$ & 72,5\,\% & $0{,}0010$& $+0{,}38$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Die Baseline wiederholt das A2C-Ergebnis: Im Testfenster liegt die Marge bei
+$+0{,}019$ NAV-Punkten, der Agent gewinnt in \textbf{51,0\,\%} der Episoden --- ein
+Münzwurf --- und der einseitige $p$-Wert ist $0{,}32$. \textbf{Ein A3C-Agent ohne
+Anpassungen hat keinen belegbaren Vorsprung vor Buy-and-Hold.} Im Trainingsfenster steht
+gleichzeitig eine Marge von $+8{,}43$: Der Agent hat den einen historischen Pfad
+auswendig gelernt.
+
+\subsection{Zerlegung: welcher Faktor trägt?}
+
+Ein naheliegender Griff ins Werkzeugregal ist ein Bündel aus drei Änderungen:
+\texttt{nstep} $5\to10$ (n-Schritt-Returns), \texttt{ent\_coef} $0{,}01\to0{,}02$
+(Entropie-Bonus) und \texttt{obs\_noise} $0\to0{,}01$ (Gauß-Rauschen auf die Beobachtung
+während des Trainings). Das Bündel hebt die Testmarge auf $+0{,}145$
+($p=0{,}007$). Nur: \emph{welcher} der drei Faktoren tut das?
+
+Deshalb wurde jeder Faktor einzeln bei ebenfalls 20 Seeds gefahren (Zeilen 2--4 in
+Tabelle~\ref{tab:a3c-arms}). Das Ergebnis ist eindeutig und war für mich überraschend:
+
+\paragraph{\texttt{nstep} ist der Wirkstoff.} Allein erreicht \texttt{nstep} $10$
+bereits $+0{,}125$ ($p=0{,}019$, Trefferquote 67,8\,\%) --- das sind \textbf{85\,\%} der
+Bündelwirkung. Der gepaarte Test Bündel gegen \texttt{nstep} allein ergibt
+$+0{,}020$ bei $p=0{,}81$: statistisch \textbf{nicht unterscheidbar}. Das Bündel ist
+also keine Summe von Hebeln, sondern im Wesentlichen \texttt{nstep} plus Rauschen.
+
+\paragraph{\texttt{ent\_coef} und \texttt{obs\_noise} sind inert.} Einzeln liefern sie
+$+0{,}047$ ($p=0{,}64$) und $+0{,}038$ ($p=0{,}72$) gegen die Baseline, mit
+10 bzw.\ 9 von 20 positiven Seed-Differenzen --- ein Münzwurf. Auch auf das Overfitting
+wirken sie nicht: Die In-Sample-Marge bleibt bei $+8{,}37$ bzw.\ $+8{,}79$ gegenüber
+$+8{,}43$ in der Baseline ($p=0{,}90$ und $0{,}53$). Nur \texttt{nstep} $10$ senkt sie
+signifikant auf $+6{,}71$ ($p=0{,}0015$) --- und hebt gleichzeitig den Testwert.
+
+\paragraph{Additivität.} Die Summe der drei Einzel-Deltas ist $+0{,}155$, das Bündel
+liegt bei $+0{,}126$; das Residuum ist $-0{,}029$ bei einer Streuung von $0{,}61$
+($p=0{,}84$). Der Punktschätzer ist also leicht sub-additiv ($0{,}82\times$), aber von
+reiner Additivität statistisch nicht zu unterscheiden --- das Rauschen dominiert.
+Eine Synergie gibt es jedenfalls nicht.
+
+\subsection{Ein generatives Marktmodell statt Rolling Windows}
+
+Die zweite Idee stammt aus der Paper-Auswahl (Kuo et al., LOB-GAN):
+Generalisiert der Agent besser, wenn er \emph{mehrere plausible Marktpfade} sieht statt
+eines einzigen historischen? Der naheliegende Weg wären rollierende Trainingsfenster ---
+und der ist in diesem Protokoll \textbf{nicht baubar}. Die Umgebung erzwingt pro
+Environment mehr als $2 \cdot 252 = 504$ Beobachtungen (\texttt{assert len(df) >
+2*trading\_days}), und \texttt{trading\_days} steuert gleichzeitig die Episodenlänge von
+252 Schritten; das Minimum lässt sich also nicht absenken, ohne das Protokoll zu brechen.
+Das Trainingsfenster hat aber nur \textbf{634} nutzbare Zeilen, und die Kursreihe beginnt
+exakt am Fensteranfang. Zwei echte Sub-Fenster bräuchten je rund 550 Zeilen --- unmöglich.
+Der Code prüft das inzwischen selbst und bricht mit klarer Meldung ab.
+
+Stattdessen erzeugt ein \textbf{Block-Bootstrap} synthetische Kursreihen. Entscheidend ist
+dabei, \emph{was} resampelt wird: Preisniveaus wären falsch, weil an jeder Blocknaht ein
+künstlicher Kurssprung entstünde (Block endet bei 100, der nächste beginnt bei 80 ---
+minus 20\,\% über Nacht). Gebootstrappt wird deshalb die \emph{Tagesform}:
+$\log(\text{Close}_t/\text{Close}_{t-1})$, $\log(\text{Open}_t/\text{Close}_{t-1})$,
+$\log(\text{High}_t/\text{Close}_t)$, $\log(\text{Low}_t/\text{Close}_t)$ und
+$\log(\text{Volume}_t)$. Blöcke von 20 aufeinanderfolgenden Tagen werden mit Zurücklegen
+gezogen und der Pfad wird vom ersten echten Close aus neu aufgebaut. Innerhalb der Blöcke
+bleibt die Autokorrelation erhalten, die Kurve ist per Konstruktion stetig, und der Agent
+sieht den \emph{realen} Trainingspfad nie. Gegenprobe: Die Streuung der Tagesrenditen
+beträgt in den synthetischen Reihen $0{,}0229$ bzw.\ $0{,}0247$ gegenüber $0{,}0239$ in
+der echten Reihe.
+
+\subsection{Isolation: der Bootstrap trägt, die zwei Passagiere nicht}
+
+In der Zeile ``Bündel $+$ Bootstrap'' steckt der Bootstrap noch zusammen mit den zwei
+inerten Faktoren. Der isolierende Lauf \texttt{nstep} $10$ $+$ Bootstrap ohne
+\texttt{ent\_coef} und \texttt{obs\_noise} schließt die Lücke (letzte Zeile):
+
+\begin{table}[H]
+  \centering
+  \caption{Gepaarte Tests über die 20 Seed-Differenzen (df$=19$), Testmarge.}
+  \label{tab:a3c-paired}
+  \small
+  \begin{tabular}{lrrr}
+    \toprule
+    Vergleich & $\Delta$ Testmarge & $t$ & $p$\\
+    \midrule
+    \texttt{nstep} 10 $-$ Baseline            & $+0{,}107$ & $1{,}69$ & $0{,}107$\\
+    \texttt{ent\_coef} 0,02 $-$ Baseline      & $+0{,}028$ & $0{,}47$ & $0{,}643$\\
+    \texttt{obs\_noise} 0,01 $-$ Baseline     & $+0{,}020$ & $0{,}36$ & $0{,}720$\\
+    Bündel $-$ Baseline                       & $+0{,}126$ & $1{,}98$ & $0{,}062$\\
+    Bündel $-$ \texttt{nstep} 10              & $+0{,}020$ & $0{,}24$ & $0{,}810$\\
+    \texttt{nstep} 10 $+$ Bootstrap $-$ Baseline & $+0{,}200$ & $2{,}35$ & $\mathbf{0{,}030}$\\
+    \texttt{nstep} 10 $+$ Bootstrap $-$ \texttt{nstep} 10 & $+0{,}093$ & $1{,}16$ & $0{,}260$\\
+    \texttt{nstep} 10 $+$ Bootstrap $-$ Bündel $+$ Bootstrap & $+0{,}0002$ & $0{,}003$ & $0{,}998$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Der Bootstrap-Effekt hält isoliert --- und war nie von den Passagieren getragen.}
+Der isolierte Zuwachs beträgt $+0{,}093$ und damit \emph{exakt} denselben Wert wie die
+kontaminierte Schätzung ($+0{,}093$); das Verhältnis ist $1{,}00$. Der Effekt ist also
+weder geschrumpft noch verschwunden. Einschränkung: Für sich allein ist er
+\textbf{nicht signifikant} ($p=0{,}26$, 12 von 20 Seeds positiv, Median $+0{,}138$,
+getrimmter Mittelwert $+0{,}112$) --- der Punktschätzer ist stabil, die Stichprobe zu klein.
+
+\paragraph{\texttt{nstep} 10 $+$ Bootstrap ist von ``Bündel $+$ Bootstrap'' nicht zu
+unterscheiden} ($+0{,}0002$, $p=0{,}998$). Damit sind \texttt{ent\_coef} und
+\texttt{obs\_noise} \textbf{endgültig als Passagiere belegt}: Die beiden Läufe
+unterscheiden sich nur in diesen zwei Parametern und liefern praktisch dieselbe
+Verteilung. (Nebenbei ein Konsistenzbeleg dafür, dass die Bootstrap-Replikate
+deterministisch sind.)
+
+\paragraph{Erstmals ein signifikanter Vorsprung.} \texttt{nstep} $10$ $+$ Bootstrap ist
+gegenüber der Baseline signifikant besser ($+0{,}200$, $p=0{,}030$) und die eigene
+Testmarge ist klar von null verschieden ($p=0{,}0010$, zweiseitig $0{,}0019$). Das ist der
+\emph{erste} Arm in diesem Projekt, der die 5-\%-Schwelle im gepaarten Test gegen die
+Baseline reißt --- weder \texttt{nstep} allein ($p=0{,}107$) noch das Bündel
+($p=0{,}062$) schaffen das.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{update_2026_a3c.png}
+  \caption{Ein-Faktor-Zerlegung und Block-Bootstrap, 20 Seeds. Links die Testmarge
+  (Fehlerbalken: 95-\%-KI), rechts die Marge im Trainingsfenster. Die beiden
+  Bootstrap-Arme (dunkel) haben in-sample praktisch null Vorsprung und out-of-sample den
+  größten.}
+  \label{fig:a3c}
+\end{figure}
+
+\subsection{Was das Overfitting-Bild zeigt}
+
+Abbildung~\ref{fig:a3c} macht den Kern sichtbar. Die vier Arme, die auf dem echten
+Fenster trainieren, tragen in-sample zwischen $+6{,}7$ und $+8{,}8$ NAV-Punkte --- und
+davon bleibt out-of-sample fast nichts. Die beiden Bootstrap-Arme haben in-sample
+$+0{,}02$, also \emph{null} Vorsprung, und liefern gleichzeitig die besten Testwerte. Sie
+haben den historischen Pfad nie gesehen; dass sie im Trainingsfenster nicht gewinnen, ist
+deshalb keine Schwäche, sondern der Mechanismus. Ein In-Sample-Vorsprung von $+8$ ist
+damit als das entlarvt, was er ist: Memorieren.
+
+\subsection{Einschränkungen}
+
+\paragraph{20 Seeds sind eine kleine Stichprobe.} Die Konfidenzintervalle in
+Tabelle~\ref{tab:a3c-arms} sind breit, und der zentrale Bootstrap-Zuwachs ist mit
+$p=0{,}26$ unterpowert. Belastbar ist: dass die Baseline keinen Vorsprung hat, dass
+\texttt{nstep} $10$ das Bündel erklärt, dass die zwei übrigen Faktoren nichts tun, und
+dass \texttt{nstep} $10$ $+$ Bootstrap die Baseline signifikant schlägt. Nicht belastbar
+ist die Behauptung, der Bootstrap-Zusatz sei \emph{für sich} signifikant.
+
+\paragraph{Nur fünf verschiedene synthetische Pfade.} Bei 20 Agenten und fünf
+Bootstrap-Replikaten teilen sich je vier Seeds dieselbe synthetische Reihe. Die Seeds
+variieren dann nur die Exploration, nicht die Umgebung. Ein Lauf mit einem eigenen Pfad
+pro Agent wäre der nächste saubere Schritt.
+
+\paragraph{Die In-Sample-Marge der Bootstrap-Arme ist nicht vergleichbar.} Sie wird auf
+dem echten Fenster gemessen, auf dem diese Agenten nie trainiert haben; die Zeile ist
+deshalb nur als Overfitting-Indikator lesbar, nicht als Leistungsmaß.
+
+\paragraph{Daten und Umgebung.} Es gelten die Einschränkungen aus
+Abschnitt~\ref{sec:abweichungen}: Beobachtungsvektor 334 statt 205, lokale CSVs statt
+\texttt{yfinance}. A3C nutzt das gleiche Environment wie A2C, die Abweichungen wirken also
+auf beide Arme gleichermaßen.
+
+\subsection{Fazit des A3C-Teils}
+
+Die Baseline bestätigt den A2C-Befund auf einem zweiten Algorithmus: kein belegbarer
+Vorsprung vor Buy-and-Hold. Die Zerlegung zeigt, dass der Effekt der naheliegenden
+``Regularisierung'' in Wahrheit aus der \textbf{Kredit-Zuweisung} stammt
+(\texttt{nstep} $5\to10$); Entropie-Bonus und Beobachtungsrauschen sind in dieser
+Größenordnung wirkungslos. Der \textbf{Block-Bootstrap} liefert als zweiter Hebel den
+besten Testwert und den ersten signifikanten Vorsprung gegenüber der Baseline ---
+allerdings erst in der Kombination. Konzeptionell ist das der interessantere Befund: Der
+Agent braucht den realen historischen Pfad nicht, um auf dem Testfenster gleichauf oder
+besser zu sein; viele plausible Pfade genügen.
