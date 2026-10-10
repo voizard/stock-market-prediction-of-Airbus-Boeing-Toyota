@@ -228,6 +228,84 @@ not be expected to transfer to another.
   \label{fig:update-a3c-replication}
 \end{figure}
 
+\subsection{Generalization Check: Six Further Stocks}
+\label{sec:update-a3c-generalization}
+
+The three stocks above are not a neutral sample: they are the ones the course picked, and
+two of them (Boeing, Airbus) sit in the same industry. If the bootstrap effect is a property
+of the \emph{method}, it has to show up on other price series as well; if it is
+stock-specific, six further, deliberately \emph{sector-diverse} series should scatter around
+zero. The protocol was therefore repeated unchanged --- same environment, windows, episode
+seeds and evaluation, 20 seeds, the three arms baseline, \texttt{nstep} 10 and \texttt{nstep}
+10 $+$ bootstrap --- on \textbf{LMT} (defence), \textbf{CAT} (industrial), \textbf{JPM}
+(banking), \textbf{KO} (consumer staples), \textbf{NVDA} (technology) and \textbf{XOM}
+(energy).
+
+\begin{table}[H]
+  \centering
+  \caption{Generalization check on six further stocks, 20 seeds each. Test margin $=$ agent
+           $-$ buy-and-hold (NAV points); the right-hand column is the paired difference
+           against the baseline, $p$ two-sided from the $t$-test. The two pooled rows use
+           the seed differences of the six new stocks ($n=120$) and of all nine price
+           series ($n=180$, i.e.\ including Boeing, Airbus and Toyota).}
+  \label{tab:update-a3c-generalization}
+  \small
+  \begin{tabular}{lrrrr}
+    \toprule
+    Stock & baseline & \texttt{nstep} 10 & \texttt{nstep} 10 $+$ boot & $\Delta$ $+$ boot $-$ baseline\\
+    \midrule
+    LMT  & $-0.177$ & $-0.213$ & $-0.165$ & $+0.012$ ($p=0.87$)\\
+    CAT  & $-0.730$ & $-0.813$ & $-0.777$ & $-0.047$ ($p=0.79$)\\
+    JPM  & $-0.153$ & $-0.190$ & $-0.221$ & $-0.067$ ($p=0.099$)\\
+    KO   & $-0.308$ & $-0.270$ & $-0.329$ & $-0.021$ ($p=0.78$)\\
+    NVDA & $-0.089$ & $-0.058$ & $-0.337$ & $-0.248$ ($p=0.012$)\\
+    XOM  & $-0.700$ & $-0.689$ & $-0.544$ & $+0.157$ ($p=0.004$)\\
+    \midrule
+    pooled, six new ($n=120$)   & --- & --- & --- & $-0.036$ ($p=0.36$)\\
+    pooled, all nine ($n=180$)  & --- & --- & --- & $+0.002$ ($p=0.96$)\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{The mechanism replicates for a third time.} On all six new stocks the
+bootstrap-free arms carry a large in-sample margin ($+1.4$ to $+30.2$ NAV points) while the
+bootstrap arm sits at zero or below it: $+0.05$ (LMT), $-0.31$ (CAT), $-0.29$ (JPM),
+$-0.01$ (KO), $-1.74$ (NVDA) and $+0.24$ (XOM). That the block bootstrap removes the
+memorisation of the historical path is thus reproducible across nine price series --- this
+part is a stable property of the procedure.
+
+\paragraph{The out-of-sample benefit is not.} Four of the six new stocks move only within
+noise (LMT $+0.012$, $p=0.87$; CAT $-0.047$, $p=0.79$; JPM $-0.067$, $p=0.099$; KO
+$-0.021$, $p=0.78$), and the two significant ones point in \emph{opposite} directions:
+\textbf{XOM} improves by $+0.157$ ($p=0.004$) while \textbf{NVDA} deteriorates by $-0.248$
+($p=0.012$). Pooled over the six the effect is $-0.036$ ($p=0.36$, $n=120$), over all nine
+price series $+0.002$ ($p=0.96$, $n=180$). Neither is distinguishable from zero.
+
+\paragraph{A side observation.} On most of the new stocks the baseline agent itself loses
+to buy-and-hold in the test window (CAT $-0.73$, XOM $-0.70$, KO $-0.31$): on strongly
+trending series the conservative buy-and-hold is hard to beat, and the arms then differ only
+in how much they lose.
+
+\paragraph{Consequence.} The generalization hypothesis is \textbf{not confirmed}. The
+\texttt{nstep} 10 $+$ bootstrap advantage seen on Boeing and Toyota
+(Section~\ref{sec:update-a3c-replication}) does not reproduce on six further,
+sector-diverse stocks; across nine price series in total, two significant improvements and
+two significant deteriorations cancel out. The honest summary of the whole A3C part is thus:
+the \emph{mechanism} --- a bootstrap that removes memorisation --- is robust, its
+\emph{payoff} is not. A lever that helps on one price series must not be expected to
+transfer to another; that is precisely the lesson of the three selected papers
+(Chapter~\ref{sec:related-work}).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{update_2026_a3c_generalization.png}
+  \caption{Out-of-sample advantage of the bootstrap variant over the baseline on nine price
+  series, per stock and pooled. Error bars: 95\,\% CI of the paired difference; $*$ marks
+  $p<0.05$. The three original stocks scatter widely; of the six new ones two are significant
+  in opposite directions and four stay within noise. Pooled, the effect vanishes.}
+  \label{fig:update-a3c-generalization}
+\end{figure}
+
 \subsection{Limitations}
 
 \paragraph{20 seeds are a small sample.} The confidence intervals in
@@ -259,6 +337,9 @@ and observation noise are ineffective at this magnitude. The \textbf{block boots
 delivers, as a second lever, the best test value and --- on Boeing --- the first significant
 edge over the baseline, but only in combination. The robustness check on the other two
 stocks (Section~\ref{sec:update-a3c-replication}) shows that this edge does not transfer:
-the mechanism is reproducible, the payoff is not. Conceptually this is the more interesting finding: the
+the mechanism is reproducible, the payoff is not. The generalization check on six further,
+sector-diverse stocks (Section~\ref{sec:update-a3c-generalization}) confirms this: pooled
+over all nine price series the bootstrap advantage is $+0.002$ ($p=0.96$, $n=180$).
+Conceptually this is the more interesting finding: the
 agent does not need the real historical path to be level with or better than buy-and-hold on
 the test window; many plausible paths are enough.
