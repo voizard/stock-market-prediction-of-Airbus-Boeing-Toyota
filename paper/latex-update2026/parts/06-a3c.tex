@@ -234,6 +234,86 @@ einer Kursreihe hilft, überträgt sich nicht ohne Weiteres auf eine andere.
   \label{fig:a3c-replikation}
 \end{figure}
 
+\subsection{Generalisierungsprüfung: sechs weitere Aktien}
+\label{sec:a3c-generalisierung}
+
+Die drei Aktien oben sind keine neutrale Stichprobe: Es sind die, die der Kurs ausgewählt
+hat, und zwei davon (Boeing, Airbus) stammen aus derselben Branche. Ist der Bootstrap-Effekt
+eine Eigenschaft der \emph{Methode}, muss er auch auf anderen Kursreihen auftreten; ist er
+aktienspezifisch, sollten sechs weitere, bewusst \emph{sektor-diverse} Reihen um die Null
+streuen. Das Protokoll wurde deshalb unverändert wiederholt --- gleiche Umgebung, Fenster,
+Episoden-Seeds und Auswertung, 20 Seeds, die drei Arme Baseline, \texttt{nstep} $10$ und
+\texttt{nstep} $10$ $+$ Bootstrap --- auf \textbf{LMT} (Rüstung), \textbf{CAT} (Industrie),
+\textbf{JPM} (Bank), \textbf{KO} (Konsum), \textbf{NVDA} (Technologie) und \textbf{XOM}
+(Energie).
+
+\begin{table}[H]
+  \centering
+  \caption{Generalisierungsprüfung auf sechs weiteren Aktien, je 20 Seeds. Testmarge $=$
+           Agent $-$ Buy-and-Hold (NAV-Punkte); die rechte Spalte ist die gepaarte Differenz
+           gegen die Baseline, $p$ zweiseitig aus dem $t$-Test. Die gepoolten Zeilen nutzen
+           die Seed-Differenzen der sechs neuen Aktien ($n=120$) bzw.\ aller neun Kursreihen
+           ($n=180$, also inklusive Boeing, Airbus und Toyota).}
+  \label{tab:a3c-generalisierung}
+  \small
+  \begin{tabular}{lrrrr}
+    \toprule
+    Aktie & Baseline & \texttt{nstep} 10 & \texttt{nstep} 10 $+$ Boot & $\Delta$ $+$ Boot $-$ Baseline\\
+    \midrule
+    LMT  & $-0{,}177$ & $-0{,}213$ & $-0{,}165$ & $+0{,}012$ ($p=0{,}87$)\\
+    CAT  & $-0{,}730$ & $-0{,}813$ & $-0{,}777$ & $-0{,}047$ ($p=0{,}79$)\\
+    JPM  & $-0{,}153$ & $-0{,}190$ & $-0{,}221$ & $-0{,}067$ ($p=0{,}099$)\\
+    KO   & $-0{,}308$ & $-0{,}270$ & $-0{,}329$ & $-0{,}021$ ($p=0{,}78$)\\
+    NVDA & $-0{,}089$ & $-0{,}058$ & $-0{,}337$ & $-0{,}248$ ($p=0{,}012$)\\
+    XOM  & $-0{,}700$ & $-0{,}689$ & $-0{,}544$ & $+0{,}157$ ($p=0{,}004$)\\
+    \midrule
+    gepoolt, sechs neue ($n=120$)  & --- & --- & --- & $-0{,}036$ ($p=0{,}36$)\\
+    gepoolt, alle neun ($n=180$)   & --- & --- & --- & $+0{,}002$ ($p=0{,}96$)\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Der Mechanismus repliziert ein drittes Mal.} Auf allen sechs neuen Aktien tragen
+die bootstrap-freien Arme eine große In-Sample-Marge ($+1{,}4$ bis $+30{,}2$ NAV-Punkte),
+während der Bootstrap-Arm bei null oder darunter liegt: $+0{,}05$ (LMT), $-0{,}31$ (CAT),
+$-0{,}29$ (JPM), $-0{,}01$ (KO), $-1{,}74$ (NVDA) und $+0{,}24$ (XOM). Dass der
+Block-Bootstrap das Memorieren des historischen Pfads entfernt, ist damit über neun
+Kursreihen reproduzierbar --- dieser Teil ist eine stabile Eigenschaft des Verfahrens.
+
+\paragraph{Der Out-of-Sample-Nutzen nicht.} Vier der sechs neuen Aktien bewegen sich nur im
+Rauschen (LMT $+0{,}012$, $p=0{,}87$; CAT $-0{,}047$, $p=0{,}79$; JPM $-0{,}067$,
+$p=0{,}099$; KO $-0{,}021$, $p=0{,}78$), und die zwei signifikanten zeigen in
+\emph{entgegengesetzte} Richtungen: \textbf{XOM} verbessert sich um $+0{,}157$
+($p=0{,}004$), während \textbf{NVDA} um $-0{,}248$ schlechter wird ($p=0{,}012$). Gepoolt
+über die sechs ist der Effekt $-0{,}036$ ($p=0{,}36$, $n=120$), über alle neun Kursreihen
+$+0{,}002$ ($p=0{,}96$, $n=180$). Beides ist nicht von null unterscheidbar.
+
+\paragraph{Nebenbefund.} Auf den meisten neuen Aktien verliert schon der Baseline-Agent
+gegen Buy-and-Hold im Testfenster (CAT $-0{,}73$, XOM $-0{,}70$, KO $-0{,}31$): Auf stark
+trendenden Reihen ist das konservative Buy-and-Hold schwer zu schlagen, und die Arme
+unterscheiden sich dann nur darin, wie viel sie verlieren.
+
+\paragraph{Konsequenz.} Die Generalisierungshypothese ist \textbf{nicht bestätigt}. Der auf
+Boeing und Toyota beobachtete Vorteil von \texttt{nstep} $10$ $+$ Bootstrap
+(Abschnitt~\ref{sec:a3c-replikation}) reproduziert sich auf sechs weiteren,
+sektor-diversen Aktien nicht; über neun Kursreihen heben sich zwei signifikante
+Verbesserungen und zwei signifikante Verschlechterungen gegenseitig auf. Die ehrliche
+Zusammenfassung des gesamten A3C-Teils lautet damit: Der \emph{Mechanismus} --- ein
+Bootstrap, der das Memorieren entfernt --- ist robust, sein \emph{Nutzen} nicht. Ein Hebel,
+der auf einer Kursreihe hilft, überträgt sich nicht ohne Weiteres auf eine andere; genau das
+ist die Lehre der drei ausgewählten Paper.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{update_2026_a3c_generalization.png}
+  \caption{Out-of-Sample-Vorteil der Bootstrap-Variante gegenüber der Baseline auf neun
+  Kursreihen, je Aktie und gepoolt. Fehlerbalken: 95-\%-KI der gepaarten Differenz; $*$
+  markiert $p<0{,}05$. Die drei Originalaktien streuen weit; von den sechs neuen sind zwei
+  signifikant in entgegengesetzte Richtungen, vier im Rauschen. Gepoolt verschwindet der
+  Effekt.}
+  \label{fig:a3c-generalisierung}
+\end{figure}
+
 \subsection{Einschränkungen}
 
 \paragraph{20 Seeds sind eine kleine Stichprobe.} Die Konfidenzintervalle in
@@ -267,6 +347,9 @@ Größenordnung wirkungslos. Der \textbf{Block-Bootstrap} liefert als zweiter He
 besten Testwert und --- auf Boeing --- den ersten signifikanten Vorsprung gegenüber der
 Baseline, allerdings erst in der Kombination. Die Robustheitsprüfung auf den beiden anderen
 Aktien (Abschnitt~\ref{sec:a3c-replikation}) schränkt das ein: Der Mechanismus ist
-reproduzierbar, der Out-of-Sample-Nutzen nicht. Konzeptionell ist das der interessantere Befund: Der
+reproduzierbar, der Out-of-Sample-Nutzen nicht. Die Generalisierungsprüfung auf sechs
+weiteren, sektor-diversen Aktien (Abschnitt~\ref{sec:a3c-generalisierung}) bestätigt das:
+gepoolt über alle neun Kursreihen ist der Bootstrap-Vorteil $+0{,}002$ ($p=0{,}96$,
+$n=180$). Konzeptionell ist das der interessantere Befund: Der
 Agent braucht den realen historischen Pfad nicht, um auf dem Testfenster gleichauf oder
 besser zu sein; viele plausible Pfade genügen.
