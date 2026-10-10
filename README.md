@@ -44,6 +44,15 @@ tests whether the agent's actions carry any predictive value.
   bootstrap removes memorisation on every stock (in-sample margin ≈ 0 vs. +2…+5), but its
   out-of-sample benefit is stock-specific. The “first significant edge” is therefore a
   single-stock result, not a general property of the method.
+- **A generalization check on six further, sector-diverse stocks does not confirm the
+  bootstrap benefit.** Repeating the whole protocol on **LMT, CAT, JPM, KO, NVDA and XOM**
+  (20 seeds each) reproduces the *mechanism* — the bootstrap arm has an in-sample margin of
+  ≈ 0 on all six — but not the *payoff*: pooled over the six the paired
+  `nstep 10 + bootstrap − baseline` is **−0.036** (*p* = 0.36, *n* = 120), and pooled over
+  all nine price series **+0.002** (*p* = 0.96, *n* = 180). Two stocks improve significantly
+  (XOM +0.157, *p* = 0.004) and two deteriorate significantly (NVDA −0.248, *p* = 0.012);
+  pooled they cancel out. With nine price series the honest conclusion is: the mechanism is
+  robust, the payoff is stock-specific.
 
 ## Results — 2026 re-run, 20 seeds per stock
 
@@ -145,8 +154,10 @@ The price CSV is **not** redistributed here — it belongs to the data provider.
 │   ├── plot_margins.py    in-sample vs. out-of-sample margin figure
 │   ├── train_eval_a3c.py  A3C counterpart: async workers, n-step returns, block bootstrap
 │   ├── plot_a3c_ablation.py  one-factor decomposition + bootstrap figure
-│   ├── compare_a3c_repl.py   replication: paired tests per stock + pooled (AIR+TM)
+│   ├── compare_a3c_repl.py   replication/generalization: paired tests per stock + pooled (any ticker list)
 │   ├── plot_a3c_replication.py  replication figure across the three stocks
+│   ├── plot_a3c_generalization.py  generalization figure across nine stocks
+│   ├── run_a3c_generalization.sh   the six-stock generalization run (6 stocks x 3 arms)
 │   └── data_update/       scripts that fetched the 2026 market data
 ├── paper/                 LaTeX sources and PDFs of both reports
 │   ├── latex/             main report: main.tex, parts/, figures, code listing
@@ -177,6 +188,10 @@ A3C_NSTEP=10 A3C_BOOT=5 A3C_BOOT_BLOCK=20 python3 src/train_eval_a3c.py BA   # +
 python3 src/plot_a3c_ablation.py                    # decomposition figure
 python3 src/compare_a3c_repl.py AIR TM              # replication: paired tests per stock + pooled
 python3 src/plot_a3c_replication.py                 # replication figure (3 stocks)
+bash src/run_a3c_generalization.sh                  # generalization: 6 stocks x 3 arms, 20 seeds (~10 h)
+python3 src/compare_a3c_repl.py LMT CAT JPM KO NVDA XOM   # generalization: pooled over the six
+python3 src/compare_a3c_repl.py BA AIR TM LMT CAT JPM KO NVDA XOM  # pooled over all nine
+python3 src/plot_a3c_generalization.py              # generalization figure (9 stocks)
 
 # reports (LaTeX via Tectonic)
 cd paper/latex && tectonic -X compile main.tex --outdir out              # main report

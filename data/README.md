@@ -22,6 +22,32 @@ python3 data/download_data.py          # idempotent; validates shape, not just e
 The script checks the **form** of the file (header, row count, first date, row width), not
 only that a file exists — a truncated download is rejected.
 
+## The other eight series
+
+The same script fetches any symbol (`--symbol`, `--out`). The 2026 re-run and the A3C
+generalization test use nine series in total:
+
+| Ticker | Series | Used in |
+|---|---|---|
+| BA | Boeing | re-run + A3C |
+| TM | Toyota | re-run + A3C |
+| AIR | Airbus (EPA:AIR, from the Yahoo export — see below) | re-run + A3C |
+| LMT | Lockheed Martin | A3C generalization |
+| CAT | Caterpillar | A3C generalization |
+| JPM | JPMorgan Chase | A3C generalization |
+| KO | Coca-Cola | A3C generalization |
+| NVDA | NVIDIA | A3C generalization |
+| XOM | Exxon Mobil | A3C generalization |
+
+```bash
+for S in LMT CAT JPM KO NVDA XOM; do
+  python3 data/download_data.py --symbol "$S" --out "data/${S}_5Y_daily.csv"
+done
+```
+
+These six CSVs are registered in `src/env_runner.py` under `CSV`, which is what makes the
+generalization run (`src/run_a3c_generalization.sh`) able to address them by ticker.
+
 ## Why not yfinance?
 
 The original notebook loads prices through `yfinance`. From many hosts (including the one this

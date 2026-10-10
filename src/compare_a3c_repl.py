@@ -82,7 +82,7 @@ def arm_block(tk):
 
 
 def pooled(stores):
-    print("\n########## POOLED (AIR + TM) ##########")
+    print(f"\n########## POOLED ({' + '.join(stores)}) ##########")
     for x, y in [("nstep10", "baseline"), ("nstep10boot", "baseline"),
                  ("nstep10boot", "nstep10")]:
         diffs = []

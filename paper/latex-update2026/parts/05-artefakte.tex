@@ -16,6 +16,7 @@
     \texttt{figs/update\_2026\_margins.png} & In-Sample- vs.\ Out-of-Sample-Marge je Aktie (20 Seeds)\\
     \texttt{figs/update\_2026\_a3c.png} & A3C: Ein-Faktor-Zerlegung und Block-Bootstrap (Boeing, 20 Seeds)\\
     \texttt{figs/update\_2026\_a3c\_replication.png} & A3C-Replikation: Out-of-Sample-Vorteil vs.\ Baseline, je Aktie + gepoolt\\
+    \texttt{figs/update\_2026\_a3c\_generalization.png} & A3C-Generalisierung: Out-of-Sample-Vorteil vs.\ Baseline über neun Kursreihen, je Aktie + gepoolt\\
     \texttt{figs/update\_2026\_1y.png}   & Kursentwicklung der drei Aktien, letzte zwölf Monate\\
     \texttt{updated\_metrics\_final.json} & aktualisierte Fundamentalkennzahlen\\
     \texttt{results\_ba\_newdata.json}   & Roh-Ergebnisse Boeing (20 Seeds, Training + Test)\\
@@ -23,6 +24,7 @@
     \texttt{results\_tm\_newdata.json}   & Roh-Ergebnisse Toyota (20 Seeds, Training + Test)\\
     \texttt{results\_ba\_a3c*.json}   & A3C-Roh-Ergebnisse Boeing: Baseline, Ein-Faktor-Arme (\texttt{nstep10}, \texttt{ent02}, \texttt{noise01}), B\"undel, Bootstrap (20 Seeds)\\
     \texttt{results\_\{air,tm\}\_a3c*.json} & A3C-Roh-Ergebnisse Airbus/Toyota: Baseline, \texttt{nstep10}, \texttt{nstep10boot} (20 Seeds)\\
+    \texttt{results\_\{lmt,cat,jpm,ko,nvda,xom\}\_a3c*.json} & A3C-Roh-Ergebnisse der sechs neuen Aktien (Generalisierung): Baseline, \texttt{nstep10}, \texttt{nstep10boot} (20 Seeds)\\
     \texttt{agent\_\{ba,air,tm\}\_1..20.zip} & die 60 neu trainierten A2C-Modelle\\
     \texttt{env\_runner.py}              & Environment-Aufsatz (lokale Daten, Seriell-Patch)\\
     \texttt{train\_eval\_multi.py}       & Training und Auswertung für beliebige Ticker, mit Resume\\
@@ -30,10 +32,13 @@
     \texttt{plot\_margins.py}            & Abbildung Train- vs.\ Testmarge je Aktie\\
     \texttt{train\_eval\_a3c.py}         & A3C-Training und -Auswertung (asynchron, n-Schritt-Returns, Block-Bootstrap)\\
     \texttt{plot\_a3c\_ablation.py}      & Abbildung A3C-Ein-Faktor-Zerlegung und Bootstrap\\
-    \texttt{compare\_a3c\_repl.py}       & Replikations-Auswertung: gepaarte Tests je Aktie und gepoolt (AIR+TM)\\
+    \texttt{compare\_a3c\_repl.py}       & Auswertung: gepaarte Tests je Aktie und gepoolt über eine beliebige Tickerliste\\
     \texttt{plot\_a3c\_replication.py}   & Abbildung A3C-Replikation über die drei Aktien\\
+    \texttt{plot\_a3c\_generalization.py} & Abbildung A3C-Generalisierung über neun Aktien\\
+    \texttt{run\_a3c\_generalization.sh} & Startskript des Generalisierungslaufs (6 Titel $\times$ 3 Arme, resume-sicher)\\
     \texttt{train\_eval.py}              & Training und Auswertung (Notebook-Protokoll, 5 Agenten)\\
     \texttt{\{BA,AIR,TM\}\_5Y\_daily.csv} & Tagesdaten der drei Aktien (fünf Jahre)\\
+    \texttt{\{LMT,CAT,JPM,KO,NVDA,XOM\}\_5Y\_daily.csv} & Tagesdaten der sechs neuen Aktien (fünf Jahre)\\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -51,6 +56,10 @@ python3 aif_run/train_eval_a3c.py BA           # A3C auf Boeing, 20 Seeds (~2 h)
 python3 aif_run/plot_a3c_ablation.py           # Abbildung A3C-Zerlegung + Bootstrap
 python3 aif_run/compare_a3c_repl.py AIR TM     # Replikation: gepaarte Tests je Aktie + gepoolt
 python3 aif_run/plot_a3c_replication.py        # Abbildung A3C-Replikation (3 Aktien)
+bash src/run_a3c_generalization.sh             # Generalisierung: 6 Titel x 3 Arme, 20 Seeds (~10 h)
+python3 aif_run/compare_a3c_repl.py LMT CAT JPM KO NVDA XOM   # gepoolt ueber die 6 Neuen
+python3 aif_run/compare_a3c_repl.py BA AIR TM LMT CAT JPM KO NVDA XOM  # gepoolt ueber alle 9
+python3 src/plot_a3c_generalization.py         # Abbildung A3C-Generalisierung (9 Aktien)
 cd paper/latex-update2026 && tectonic -X compile main.tex --outdir out   # Report-PDF
 \end{verbatim}
 }
@@ -60,7 +69,8 @@ Ein Lauf ist unterbrechbar: \texttt{train\_eval\_multi.py} überspringt Agenten,
 
 \paragraph{Hinweis zu den Datenquellen.} Yahoo/\texttt{yfinance} ist von diesem Host hart
 geblockt (HTTP 429 auf allen Endpunkten, auch nach zwanzig Minuten). Boeing und Toyota
-stammen daher aus der History-API von stockanalysis.com, die Airbus-Kurse aus der von Chris
-nachgelieferten Yahoo-Reihe zu \texttt{AIR.PA} (Euronext Paris, in Euro). Achtung: der Endpunkt
+sowie die sechs Aktien des Generalisierungslaufs (LMT, CAT, JPM, KO, NVDA, XOM) stammen
+aus der History-API von stockanalysis.com, die Airbus-Kurse aus der von Chris nachgelieferten
+Yahoo-Reihe zu \texttt{AIR.PA} (Euronext Paris, in Euro). Achtung: der Endpunkt
 \texttt{/api/symbol/s/AIR/history} liefert \emph{AAR Corp (US)} und nicht Airbus -- die
 daraus zunächst abgeleiteten Airbus-Zahlen waren falsch und wurden verworfen.

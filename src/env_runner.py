@@ -72,6 +72,13 @@ CSV = {
     "BA": f"{DATA}/BA_5Y_daily.csv",
     "TM": f"{DATA}/TM_5Y_daily.csv",
     "AIR": f"{DATA}/AIR_5Y_daily.csv",
+    # extension set for the A3C generality test (sector-diverse, 5Y daily)
+    "LMT": f"{DATA}/LMT_5Y_daily.csv",
+    "CAT": f"{DATA}/CAT_5Y_daily.csv",
+    "JPM": f"{DATA}/JPM_5Y_daily.csv",
+    "KO": f"{DATA}/KO_5Y_daily.csv",
+    "NVDA": f"{DATA}/NVDA_5Y_daily.csv",
+    "XOM": f"{DATA}/XOM_5Y_daily.csv",
 }
 
 COLS = ["Open", "High", "Low", "Close", "Volume"]
